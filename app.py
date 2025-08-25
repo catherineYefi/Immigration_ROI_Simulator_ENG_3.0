@@ -14,6 +14,8 @@ import io
 import base64
 import hashlib
 import random
+from fastapi import FastAPI
+from pydantic import BaseModel
 
 # Legal disclaimers
 LEGAL_DISCLAIMERS = {
@@ -535,6 +537,57 @@ def add_animations():
     </script>
     """
     return gr.HTML(animation_js)
+    
+def create_dynamic_chart_updates():
+    """Return JS for real-time chart updates from slider changes."""
+    js = """
+    <script>
+    async function updateChartRealTime(){
+        const payload = {
+            dest: document.getElementById('dest')?.querySelector('select')?.value || 'UAE (Dubai)',
+            rev0: parseFloat(document.getElementById('rev0')?.querySelector('input')?.value || 0),
+            margin0: parseFloat(document.getElementById('margin0')?.querySelector('input')?.value || 0),
+            corp0: parseFloat(document.getElementById('corp0')?.querySelector('input')?.value || 0),
+            pers0: parseFloat(document.getElementById('pers0')?.querySelector('input')?.value || 0),
+            living0: parseFloat(document.getElementById('living0')?.querySelector('input')?.value || 0),
+            ongoing0: parseFloat(document.getElementById('ongoing0')?.querySelector('input')?.value || 0),
+            rev_mult: parseFloat(document.getElementById('rev_mult')?.querySelector('input')?.value || 0),
+            margin_delta: parseFloat(document.getElementById('margin_delta')?.querySelector('input')?.value || 0),
+            success: parseFloat(document.getElementById('success')?.querySelector('input')?.value || 0),
+            horizon_m: parseInt(document.getElementById('horizon_m')?.querySelector('input')?.value || 0),
+            capex_once: parseFloat(document.getElementById('capex_once')?.querySelector('input')?.value || 0),
+            discount_a: parseFloat(document.getElementById('discount_a')?.querySelector('input')?.value || 0)
+        };
+        try{
+            const resp = await fetch('/api/quick-calculate', {
+                method: 'POST',
+                headers: {'Content-Type': 'application/json'},
+                body: JSON.stringify(payload)
+            });
+            if(!resp.ok) return;
+            const data = await resp.json();
+            const preview = document.getElementById('roi-preview');
+            if(preview){
+                const roi = data.roi !== undefined ? data.roi.toFixed(1) : '—';
+                const payback = data.payback_years !== undefined && isFinite(data.payback_years) ? data.payback_years.toFixed(1)+ 'y' : 'Never';
+                preview.innerHTML = `ROI: ${roi}% | Payback: ${payback}`;
+            }
+        } catch(err){
+            console.error(err);
+        }
+    }
+    window.addEventListener('load', function(){
+        const ids=['margin0','corp0','pers0','rev_mult','margin_delta','success','horizon_m','discount_a'];
+        ids.forEach(id=>{
+            const el=document.getElementById(id);
+            if(el){
+                el.addEventListener('input', updateChartRealTime);
+            }
+        });
+    });
+    </script>
+    """
+    return js
 
 # Lead collection stages
 LEAD_STAGES = {
@@ -581,7 +634,6 @@ CSS_ENHANCED = """
     --vt-warning: #F59E0B; --vt-ink: #0F172A; --vt-muted: #64748B; --radius: 16px;
     --vt-success: #10B981; --vt-purple: #8B5CF6;
 }
-
 .gradio-container { max-width: 1400px !important; margin: 0 auto; }
 .vt-header {
     display: flex; justify-content: space-between; align-items: center;
@@ -599,59 +651,48 @@ CSS_ENHANCED = """
     background: rgba(0,0,0,0.8); z-index: 1000; display: none;
     align-items: center; justify-content: center;
 }
-
 .lead-capture-modal {
     background: white; padding: 32px; border-radius: 20px; max-width: 500px;
     margin: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
     animation: slideIn 0.3s ease-out;
 }
-
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-30px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .profile-selector {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 12px; margin: 16px 0;
 }
-
 .profile-card {
     padding: 16px; border: 2px solid #E2E8F0; border-radius: 12px;
     text-align: center; cursor: pointer; transition: all 0.3s ease;
     background: linear-gradient(135deg, #FFFFFF, #F8FAFC);
 }
-
 .profile-card:hover {
     border-color: var(--vt-primary); transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
 }
-
 .profile-card.selected {
     border-color: var(--vt-primary); background: linear-gradient(135deg, #EBF4FF, #DBEAFE);
 }
-
 .viral-share-section {
     background: linear-gradient(135deg, #8B5CF6, #6366F1);
     color: white; padding: 20px; border-radius: 16px; margin: 20px 0;
 }
-
 .share-buttons {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px; margin: 16px 0;
 }
-
 .share-button {
     padding: 12px 16px; border-radius: 8px; text-align: center;
     font-weight: 600; cursor: pointer; transition: all 0.3s ease;
     border: none; color: white;
 }
-
 .share-linkedin { background: #0077B5; }
 .share-twitter { background: #1DA1F2; }
 .share-whatsapp { background: #25D366; }
 .share-telegram { background: #0088cc; }
-
 .kpi-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px; margin: 20px 0;
@@ -677,7 +718,6 @@ CSS_ENHANCED = """
 .kpi-card.moderate .value { color: var(--vt-muted); }
 .kpi-card.error { border-left: 4px solid var(--vt-danger); }
 .kpi-card.error .value { color: var(--vt-danger); }
-
 .success-alert {
     text-align: center; padding: 20px; margin: 20px 0;
     border-radius: 12px; border: 2px solid currentColor; font-weight: 600;
@@ -685,18 +725,15 @@ CSS_ENHANCED = """
 .success-alert.exceptional { color: var(--vt-success); background: rgba(16,185,129,0.05); }
 .success-alert.good { color: var(--vt-warning); background: rgba(245,158,11,0.05); }
 .success-alert.moderate { color: var(--vt-muted); background: rgba(107,114,128,0.05); }
-
 .insight-card {
     background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(16,185,129,0.05));
     border: 1px solid rgba(37,99,235,0.2); border-radius: 12px;
     padding: 20px; margin: 12px 0; position: relative;
 }
-
 .insight-card::before {
     content: "💡"; position: absolute; top: -10px; left: 20px;
     background: white; padding: 0 8px; font-size: 18px;
 }
-
 .cta-button {
     background: linear-gradient(135deg, #10B981, #059669);
     color: white; padding: 16px 32px; border-radius: 50px;
@@ -704,29 +741,24 @@ CSS_ENHANCED = """
     cursor: pointer; transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
-
 .cta-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
-
 .progress-bar {
     width: 100%; height: 8px; background: #E2E8F0;
     border-radius: 4px; margin: 16px 0; overflow: hidden;
 }
-
 .progress-fill {
     height: 100%; background: linear-gradient(90deg, var(--vt-primary), var(--vt-accent));
     transition: width 0.5s ease;
 }
-
 .user-journey-step {
     display: flex; align-items: center; margin: 16px 0;
     padding: 16px; background: white; border-radius: 12px;
     border-left: 4px solid var(--vt-primary);
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
-
 .notification-toast {
     position: fixed; top: 20px; right: 20px; z-index: 1001;
     background: linear-gradient(135deg, #10B981, #059669);
@@ -734,39 +766,32 @@ CSS_ENHANCED = """
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
     display: none; animation: slideInRight 0.3s ease-out;
 }
-
 @keyframes slideInRight {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
 }
-
 .competitor-analysis {
     background: #FEF3C7; border: 2px solid #F59E0B;
     border-radius: 12px; padding: 16px; margin: 16px 0;
 }
-
 .urgency-indicator {
     background: linear-gradient(135deg, #EF4444, #DC2626);
     color: white; padding: 8px 16px; border-radius: 20px;
     font-size: 12px; font-weight: 600; display: inline-block;
     animation: pulse 2s infinite;
 }
-
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
 }
-
 .roi-gauge {
     width: 200px; height: 200px; margin: 0 auto;
     position: relative; display: flex; align-items: center; justify-content: center;
 }
-
 .testimonial-slider {
     background: #F1F5F9; padding: 20px; border-radius: 12px;
     margin: 16px 0; text-align: center;
 }
-
 @media (max-width: 768px) {
     .profile-selector { grid-template-columns: repeat(2, 1fr); }
     .share-buttons { grid-template-columns: 1fr; }
@@ -1221,36 +1246,42 @@ def create_immigration_roi_app_v3():
                         rev0 = gr.Number(
                             value=30000,
                             label="💰 Monthly Revenue (€)",
-                            info="Your current monthly business revenue"
+                            info="Your current monthly business revenue",
+                            elem_id="rev0"
                         )
                         margin0 = gr.Slider(
                             value=25, minimum=1, maximum=70, step=1,
                             label="📈 EBITDA Margin (%)",
-                            info="Profit margin before taxes"
+                            info="Profit margin before taxes",
+                            elem_id="margin0"
                         )
 
                     with gr.Row():
                         corp0 = gr.Slider(
                             value=20, minimum=0, maximum=50, step=1,
                             label="🏢 Corporate Tax Rate (%)",
-                            info="Current corporate tax burden"
+                            info="Current corporate tax burden",
+                            elem_id="corp0"
                         )
                         pers0 = gr.Slider(
                             value=10, minimum=0, maximum=50, step=1,
                             label="👤 Personal Tax Rate (%)",
-                            info="Personal tax on distributions"
+                            info="Personal tax on distributions",
+                            elem_id="pers0"
                         )
 
                     with gr.Row():
                         living0 = gr.Number(
                             value=4000,
                             label="🏠 Living Costs (€/month)",
-                            info="Current monthly living expenses"
+                            info="Current monthly living expenses",
+                            elem_id="living0"
                         )
                         ongoing0 = gr.Number(
                             value=500,
                             label="⚙️ Business Costs (€/month)",
-                            info="Other monthly business expenses"
+                            info="Other monthly business expenses",
+                            elem_id="ongoing0"
                         )
 
                 gr.Markdown("## 🌍 Step 3: Choose Your Dream Destination")
@@ -1259,7 +1290,8 @@ def create_immigration_roi_app_v3():
                     list(COUNTRY_CONFIG_ENHANCED.keys()),
                     value="UAE (Dubai)",
                     label="🎯 Target Country",
-                    info="Where do you want to relocate?"
+                    info="Where do you want to relocate?",
+                    elem_id="dest",
                 )
 
                 # Dynamic country insights
@@ -1295,7 +1327,6 @@ def create_immigration_roi_app_v3():
                             </div>
                             <p style="margin: 0;">{insight}</p>
                             {visa_html}
-
                         </div>
                         """
                         return html
@@ -1312,24 +1343,28 @@ def create_immigration_roi_app_v3():
                         rev_mult = gr.Slider(
                             value=3.0, minimum=0.5, maximum=5.0, step=0.1,
                             label="📊 Revenue Growth (×)",
-                            info="Expected revenue multiplier"
+                            info="Expected revenue multiplier",
+                            elem_id="rev_mult"
                         )
                         margin_delta = gr.Slider(
                             value=5.0, minimum=-20, maximum=30, step=0.5,
                             label="📈 Margin Improvement (pp)",
-                            info="Margin increase in percentage points"
+                            info="Margin increase in percentage points",
+                            elem_id="margin_delta"
                         )
 
                     with gr.Row():
                         success = gr.Slider(
                             value=75, minimum=10, maximum=100, step=1,
                             label="🎯 Success Probability (%)",
-                            info="Likelihood of achieving projections"
+                            info="Likelihood of achieving projections",
+                            elem_id="success"
                         )
                         horizon_m = gr.Slider(
                             value=60, minimum=12, maximum=120, step=1,
                             label="📅 Analysis Period (months)",
-                            info="Investment time horizon"
+                            info="Investment time horizon",
+                            elem_id="horizon_m"
                         )
 
                 with gr.Accordion("💸 Investment & Costs", open=False):
@@ -1337,12 +1372,14 @@ def create_immigration_roi_app_v3():
                         capex_once = gr.Number(
                             value=35000,
                             label="🏗️ Setup Investment (€)",
-                            info="One-time relocation costs"
+                            info="One-time relocation costs",
+                            elem_id="capex_once"
                         )
                         discount_a = gr.Slider(
                             value=12, minimum=0, maximum=40, step=1,
                             label="💹 Required Return (%)",
-                            info="Your discount rate"
+                            info="Your discount rate",
+                            elem_id="discount_a"
                         )
 
                 # Enhanced CTA Button
@@ -1363,6 +1400,8 @@ def create_immigration_roi_app_v3():
 
             with gr.Column(scale=7):
                 gr.Markdown("## 📊 Step 4: Your Personalized Results")
+                
+                roi_preview = gr.HTML('<div id="roi-preview"></div>')
 
                 # KPI Grid (hidden initially)
                 kpi_grid = gr.HTML("""
@@ -1811,7 +1850,6 @@ def create_immigration_roi_app_v3():
                 <h3 style="margin: 0 0 8px 0;">🌍 VisaTier 3.0 - Your Immigration Success Partner</h3>
                 <p style="margin: 0; color: var(--vt-muted);">Trusted by 10,000+ entrepreneurs • $50M+ in optimized relocations</p>
             </div>
-
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🚀 Success Stories</h4>
@@ -1821,7 +1859,6 @@ def create_immigration_roi_app_v3():
                         • Elena R: 18-month payback in Estonia
                     </div>
                 </div>
-
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">📊 Platform Stats</h4>
                     <div style="font-size: 14px; color: var(--vt-muted);">
@@ -1830,7 +1867,6 @@ def create_immigration_roi_app_v3():
                         • 95% client satisfaction rate
                     </div>
                 </div>
-
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🎯 Next Steps</h4>
                     <div style="font-size: 14px; color: var(--vt-muted);">
@@ -1840,7 +1876,6 @@ def create_immigration_roi_app_v3():
                     </div>
                 </div>
             </div>
-
             <div style="text-align: center; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #94A3B8;">
                 © 2025 VisaTier — Professional Immigration Advisory •
                 <a href="#" style="color: var(--vt-primary);">Privacy Policy</a> •
@@ -1852,18 +1887,49 @@ def create_immigration_roi_app_v3():
             </div>
         </div>
         """)
+        gr.HTML(create_dynamic_chart_updates())
         add_animations()
     return demo
 
 # Create and launch the app
 demo = create_immigration_roi_app_v3()
 
-if __name__ == "__main__":
-    demo.launch(
-        share=False,
-        server_name="0.0.0.0",
-        server_port=7860,
-        show_api=False,
-        show_error=True,
-        favicon_path=None
+fastapi_app = FastAPI()
+
+
+class QuickCalcRequest(BaseModel):
+    dest: str = "UAE (Dubai)"
+    rev0: float = 30000
+    margin0: float = 25.0
+    corp0: float = 20.0
+    pers0: float = 10.0
+    living0: float = 4000.0
+    ongoing0: float = 500.0
+    rev_mult: float = 3.0
+    margin_delta: float = 5.0
+    success: float = 75.0
+    horizon_m: int = 60
+    capex_once: float = 35000.0
+    discount_a: float = 12.0
+
+
+@fastapi_app.post("/api/quick-calculate")
+def quick_calculate(req: QuickCalcRequest):
+    country = COUNTRY_CONFIG_ENHANCED.get(req.dest, list(COUNTRY_CONFIG_ENHANCED.values())[0])
+    result = compute_enhanced_monthly_delta_cashflow(
+        req.rev0, req.margin0, req.corp0, req.pers0, req.living0, req.ongoing0,
+        req.dest, req.rev_mult, req.margin_delta,
+        country["corp_tax"] * 100, country["pers_tax"] * 100,
+        country["living_month"], country["ongoing_month"],
+        req.capex_once, int(req.horizon_m), req.discount_a, req.success,
+        True, True, True, True
     )
+    return {"roi": result["total_5yr_roi"], "payback_years": result["payback_years"]}
+
+
+app = gr.mount_gradio_app(fastapi_app, demo, path="/")
+
+
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run(app, host="0.0.0.0", port=7860)
