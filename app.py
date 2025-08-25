@@ -1117,6 +1117,42 @@ def create_country_comparison_matrix(selected_countries, user_profile):
     return df
 
 # =========================
+# CTA OPTIMIZATION
+# =========================
+
+def optimize_cta_based_on_results(roi, payback, profile):
+    """Determine CTA text, color, price and urgency based on results"""
+    profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
+
+    # Handle infinite payback as very long
+    payback = payback if not math.isinf(payback) else 99
+
+    if roi >= 200 and payback <= 2:
+        text = f"Book {profile_data['name']} Strategy Call"
+        color = "#10B981"
+        price = "$997"
+        urgency = (
+            f"With {roi:.1f}% ROI and {payback:.1f}y payback, spots are limited—act now."
+        )
+    elif roi >= 100 and payback <= 3:
+        text = f"Plan {profile_data['name']} Expansion"
+        color = "#2563EB"
+        price = "$499"
+        urgency = (
+            f"Strong {roi:.1f}% ROI expected. Secure your slot soon."
+        )
+    else:
+        text = f"Explore {profile_data['name']} Options"
+        color = "#F59E0B"
+        price = "$199"
+        urgency = (
+            f"ROI {roi:.1f}% with {payback:.1f}y payback—let's optimize your strategy."
+        )
+
+    return {"text": text, "color": color, "price": price, "urgency": urgency}
+
+
+# =========================
 # MAIN ENHANCED CALCULATION FUNCTION
 # =========================
 
@@ -1825,6 +1861,9 @@ def create_immigration_roi_app_v3():
 
                 # Lead capture based on results
                 lead_offer = create_lead_magnet_offer(insights, dest, profile)
+                cta_config = optimize_cta_based_on_results(
+                    result["total_5yr_roi"], result["payback_years"], profile
+                )
 
                 lead_html = f"""
                 <div class="lead-capture-modal" style="display: block; position: relative; margin: 24px 0;">
@@ -1896,12 +1935,11 @@ def create_immigration_roi_app_v3():
                 <div style="background: linear-gradient(135deg, #1E293B, #0F172A); color: #FFFFFF; padding: 24px; border-radius: 16px; text-align: center; margin: 24px 0;">
                     <h3 style="margin: 0 0 16px 0; color: #FFFFFF;">🚀 Ready to Make It Happen?</h3>
                     <p style="margin: 0 0 20px 0; color: #FFFFFF;">
-                        Based on your {roi_str} ROI potential, you're looking at serious wealth creation opportunity.
-                        Let's turn this analysis into action.
+                        {cta_config['urgency']}
                     </p>
                     <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0;">
-                        <button class="cta-button" style="background: #10B981;">
-                            📞 Book Strategy Call ($500 value)
+                        <button class="cta-button" style="background: {cta_config['color']};">
+                            📞 {cta_config['text']} ({cta_config['price']})
                         </button>
                         <button class="cta-button" style="background: #2563EB;">
                             📘 Download Full Report
