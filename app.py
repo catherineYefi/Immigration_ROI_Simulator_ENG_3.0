@@ -575,6 +575,13 @@ CSS_ENHANCED = """
     --vt-success: #10B981; --vt-purple: #8B5CF6;
 }
 .gradio-container { max-width: 1400px !important; margin: 0 auto; }
+.vt-header {
+    display: flex; justify-content: space-between; align-items: center;
+    background: var(--vt-ink); color: #CBD5E1; padding: 16px; border-radius: 12px;
+}
+.nav-links { display: flex; gap: 16px; align-items: center; }
+.nav-links a { color: #CBD5E1; text-decoration: none; }
+.title { font-size: 24px; font-weight: 700; color: #FFFFFF; }
 .lead-capture-overlay {
     position: fixed; top: 0; left: 0; width: 100%; height: 100%;
     background: rgba(0,0,0,0.8); z-index: 1000; display: none;
@@ -693,6 +700,8 @@ CSS_ENHANCED = """
     .profile-selector { grid-template-columns: repeat(2, 1fr); }
     .share-buttons { grid-template-columns: 1fr; }
     .lead-capture-modal { margin: 10px; padding: 20px; }
+    .vt-header { flex-direction: column; text-align: center; }
+    .nav-links { margin-top: 12px; }
 }
 """
 
@@ -975,23 +984,23 @@ def create_immigration_roi_app_v3():
 
         # Enhanced Header
         gr.HTML("""
-        <div class="vt-header">
+        <header class="vt-header">
           <div>
             <div class="title">🌍 VisaTier 3.0 — Ultimate Immigration ROI Calculator</div>
             <div style="font-size: 14px; color: #CBD5E1; margin-top: 4px;">
                 AI-Powered • Lead Generation • Viral Analytics • Personalized Insights
             </div>
           </div>
-        <div class="nav-links" style="display: flex; gap: 16px; align-items: center;">
-            <a href="#features" style="color: #CBD5E1; text-decoration: none;">Features</a>
-            <a href="#pricing" style="color: #CBD5E1; text-decoration: none;">Pricing</a>
-            <a href="#contact" style="color: #CBD5E1; text-decoration: none;">Contact</a>
-          </div>
+          <nav class="nav-links">
+            <a href="#features">Features</a>
+            <a href="#pricing">Pricing</a>
+            <a href="#contact">Contact</a>
+          </nav>
           <div class="right">
             <div>Join 10,000+ successful entrepreneurs</div>
             <div style="font-size: 10px;">Trusted by Fortune 500 founders</div>
           </div>
-        </div>
+        </header>
         """)
 
         # Social proof notification
