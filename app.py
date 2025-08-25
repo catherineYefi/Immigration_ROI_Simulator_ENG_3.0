@@ -70,6 +70,7 @@ COUNTRY_CONFIG_ENHANCED = {
         "living_month": 9000.0, "ongoing_month": 1500.0, "setup_once": 35000.0,
         "currency": "AED", "inflation": 2.5, "market_growth": 8.5, "ease_business": 9.2,
         "tax_treaties": 95, "banking_score": 8.8, "legal_system": "Civil Law",
+        "flag": "🇦🇪", "language": "Arabic/English", "visa": "Golden Visa",
         "market_insights": {
             "startup_founder": "🚀 World-class startup ecosystem with 0% personal tax",
             "crypto_entrepreneur": "₿ Crypto-friendly regulations and banking",
@@ -77,14 +78,15 @@ COUNTRY_CONFIG_ENHANCED = {
             "saas_founder": "💻 Growing tech talent pool and government support",
             "real_estate": "🏠 Strong property market with freehold options"
         },
-        "lead_magnets": ["UAE Startup Guide", "0% Tax Strategy", "Dubai Setup Checklist"],
-        "partnership_score": 95
+        "match_scores": {"startup_founder": 92, "crypto_entrepreneur": 95, "consulting_expert": 88, "saas_founder": 90, "real_estate": 93},
+        "lead_magnets": ["UAE Startup Guide", "0% Tax Strategy", "Dubai Setup Checklist"]
     },
     "Singapore": {
         "corp_tax": 0.17, "pers_tax": 0.22, "rev_mult": 2.8, "margin_delta_pp": 4.0,
         "living_month": 8500.0, "ongoing_month": 1800.0, "setup_once": 45000.0,
         "currency": "SGD", "inflation": 2.3, "market_growth": 6.2, "ease_business": 9.4,
         "tax_treaties": 85, "banking_score": 9.5, "legal_system": "Common Law",
+        "flag": "🇸🇬", "language": "English/Malay", "visa": "EntrePass",
         "market_insights": {
             "startup_founder": "🚀 Asia's startup capital with world-class infrastructure",
             "crypto_entrepreneur": "₿ Clear crypto regulations and fintech leadership",
@@ -92,14 +94,15 @@ COUNTRY_CONFIG_ENHANCED = {
             "saas_founder": "💻 Top talent hub with government innovation support",
             "real_estate": "🏠 Stable market with foreign investment options"
         },
-        "lead_magnets": ["Singapore Setup Guide", "ASEAN Market Entry", "Tax Optimization"],
-        "partnership_score": 90
+        "match_scores": {"startup_founder": 88, "crypto_entrepreneur": 90, "consulting_expert": 82, "saas_founder": 86, "real_estate": 80},
+        "lead_magnets": ["Singapore Setup Guide", "ASEAN Market Entry", "Tax Optimization"]
     },
     "UK": {
         "corp_tax": 0.25, "pers_tax": 0.27, "rev_mult": 1.5, "margin_delta_pp": 2.0,
         "living_month": 6200.0, "ongoing_month": 1100.0, "setup_once": 18000.0,
         "currency": "GBP", "inflation": 4.2, "market_growth": 2.1, "ease_business": 8.1,
         "tax_treaties": 130, "banking_score": 9.1, "legal_system": "Common Law",
+        "flag": "🇬🇧", "language": "English", "visa": "Innovator Visa",
         "market_insights": {
             "startup_founder": "🚀 Strong fintech ecosystem, easier post-Brexit setup",
             "crypto_entrepreneur": "₿ Developing crypto framework, banking challenges",
@@ -107,14 +110,15 @@ COUNTRY_CONFIG_ENHANCED = {
             "saas_founder": "💻 Deep tech talent, government R&D support",
             "real_estate": "🏠 Mature market with Brexit opportunities"
         },
-        "lead_magnets": ["UK Innovator Guide", "Post-Brexit Opportunities", "R&D Tax Credits"],
-        "partnership_score": 75
+        "match_scores": {"startup_founder": 75, "crypto_entrepreneur": 70, "consulting_expert": 78, "saas_founder": 80, "real_estate": 72},
+        "lead_magnets": ["UK Innovator Guide", "Post-Brexit Opportunities", "R&D Tax Credits"]
     },
     "Estonia": {
         "corp_tax": 0.20, "pers_tax": 0.20, "rev_mult": 1.8, "margin_delta_pp": 3.5,
         "living_month": 3500.0, "ongoing_month": 800.0, "setup_once": 12000.0,
         "currency": "EUR", "inflation": 2.8, "market_growth": 4.5, "ease_business": 8.8,
         "tax_treaties": 65, "banking_score": 8.2, "legal_system": "Civil Law",
+        "flag": "🇪🇪", "language": "Estonian", "visa": "e-Residency",
         "market_insights": {
             "startup_founder": "🚀 Digital-first country, e-Residency program",
             "crypto_entrepreneur": "₿ Crypto paradise with clear regulations",
@@ -122,8 +126,40 @@ COUNTRY_CONFIG_ENHANCED = {
             "saas_founder": "💻 Tech-savvy population, government digitization",
             "real_estate": "🏠 Emerging market with EU citizenship path"
         },
-        "lead_magnets": ["e-Residency Guide", "Digital Nomad Setup", "EU Market Entry"],
-        "partnership_score": 85
+        "match_scores": {"startup_founder": 85, "crypto_entrepreneur": 83, "consulting_expert": 80, "saas_founder": 82, "real_estate": 78},
+        "lead_magnets": ["e-Residency Guide", "Digital Nomad Setup", "EU Market Entry"]
+    },
+    "Portugal": {
+        "corp_tax": 0.21, "pers_tax": 0.28, "rev_mult": 1.7, "margin_delta_pp": 3.0,
+        "living_month": 4000.0, "ongoing_month": 900.0, "setup_once": 15000.0,
+        "currency": "EUR", "inflation": 3.1, "market_growth": 3.2, "ease_business": 7.8,
+        "tax_treaties": 79, "banking_score": 7.5, "legal_system": "Civil Law",
+        "flag": "🇵🇹", "language": "Portuguese", "visa": "D7 Visa",
+        "market_insights": {
+            "startup_founder": "🚀 Growing tech hubs in Lisbon and Porto",
+            "crypto_entrepreneur": "₿ Favorable crypto tax regime",
+            "consulting_expert": "💼 Access to EU market at lower costs",
+            "saas_founder": "💻 Emerging talent pool with remote potential",
+            "real_estate": "🏠 Golden Visa program and strong rental demand"
+        },
+        "match_scores": {"startup_founder": 82, "crypto_entrepreneur": 87, "consulting_expert": 78, "saas_founder": 80, "real_estate": 85},
+        "lead_magnets": ["Portugal Relocation Guide", "Golden Visa Checklist", "Lisbon Startup Map"]
+    },
+    "Netherlands": {
+        "corp_tax": 0.25, "pers_tax": 0.30, "rev_mult": 1.9, "margin_delta_pp": 3.2,
+        "living_month": 4700.0, "ongoing_month": 1000.0, "setup_once": 20000.0,
+        "currency": "EUR", "inflation": 3.5, "market_growth": 3.8, "ease_business": 8.4,
+        "tax_treaties": 100, "banking_score": 8.7, "legal_system": "Civil Law",
+        "flag": "🇳🇱", "language": "Dutch/English", "visa": "Startup Visa",
+        "market_insights": {
+            "startup_founder": "🚀 Amsterdam's startup ecosystem with EU access",
+            "crypto_entrepreneur": "₿ Progressive stance on blockchain",
+            "consulting_expert": "💼 Strong logistics and trade hub",
+            "saas_founder": "💻 High English proficiency and tech talent",
+            "real_estate": "🏠 Stable housing market with expat demand"
+        },
+        "match_scores": {"startup_founder": 84, "crypto_entrepreneur": 81, "consulting_expert": 86, "saas_founder": 88, "real_estate": 79},
+        "lead_magnets": ["Dutch Startup Visa Guide", "EU Market Gateway", "Amsterdam Tech Scene"]
     }
 }
 
@@ -765,19 +801,20 @@ def create_immigration_roi_app_v3():
                 def update_country_insights(country, profile):
                     if country in COUNTRY_CONFIG_ENHANCED and profile in USER_PROFILES:
                         country_data = COUNTRY_CONFIG_ENHANCED[country]
-                        profile_data = USER_PROFILES[profile]
                         insight = country_data.get("market_insights", {}).get(profile, "")
-                        
-                        partnership_score = country_data.get("partnership_score", 50)
-                        color = "#10B981" if partnership_score >= 85 else "#F59E0B" if partnership_score >= 70 else "#EF4444"
-                        
+                        match_score = country_data.get("match_scores", {}).get(profile, country_data.get("partnership_score", 50))
+                        color = "#10B981" if match_score >= 85 else "#F59E0B" if match_score >= 70 else "#EF4444"
+
                         html = f"""
                         <div class="insight-card">
                             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h4 style="margin: 0;">{profile_data['icon']} {country} Insights</h4>
+                                <h4 style="margin: 0;">{country_data.get('flag', '')} {country}</h4>
                                 <div style="background: {color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                                    Match Score: {partnership_score}%
+                                    Match Score: {match_score}%
                                 </div>
+                            </div>
+                            <div style="font-size: 12px; color: var(--vt-muted); margin-bottom: 8px;">
+                                Language: {country_data.get('language', '')} • Visa: {country_data.get('visa', '')}
                             </div>
                             <p style="margin: 0;">{insight}</p>
                         </div>
