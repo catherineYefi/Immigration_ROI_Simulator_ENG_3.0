@@ -629,6 +629,38 @@ CSS_ENHANCED = """
 .share-twitter { background: #1DA1F2; }
 .share-whatsapp { background: #25D366; }
 .share-telegram { background: #0088cc; }
+.kpi-grid {
+    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 16px; margin: 20px 0;
+}
+.kpi-card {
+    background: #FFFFFF; border-radius: 12px; padding: 20px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+}
+.kpi-card .label {
+    font-size: 14px; color: var(--vt-muted); margin-bottom: 8px;
+}
+.kpi-card .value {
+    font-size: 24px; font-weight: 700; color: var(--vt-ink); margin-bottom: 4px;
+}
+.kpi-card .vt-note {
+    font-size: 12px; color: var(--vt-muted);
+}
+.kpi-card.exceptional { border-left: 4px solid var(--vt-success); }
+.kpi-card.exceptional .value { color: var(--vt-success); }
+.kpi-card.good { border-left: 4px solid var(--vt-warning); }
+.kpi-card.good .value { color: var(--vt-warning); }
+.kpi-card.moderate { border-left: 4px solid var(--vt-muted); }
+.kpi-card.moderate .value { color: var(--vt-muted); }
+.kpi-card.error { border-left: 4px solid var(--vt-danger); }
+.kpi-card.error .value { color: var(--vt-danger); }
+.success-alert {
+    text-align: center; padding: 20px; margin: 20px 0;
+    border-radius: 12px; border: 2px solid currentColor; font-weight: 600;
+}
+.success-alert.exceptional { color: var(--vt-success); background: rgba(16,185,129,0.05); }
+.success-alert.good { color: var(--vt-warning); background: rgba(245,158,11,0.05); }
+.success-alert.moderate { color: var(--vt-muted); background: rgba(107,114,128,0.05); }
 .insight-card {
     background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(16,185,129,0.05));
     border: 1px solid rgba(37,99,235,0.2); border-radius: 12px;
@@ -1249,17 +1281,31 @@ def create_immigration_roi_app_v3():
             with gr.Column(scale=7):
                 gr.Markdown("## 📊 Step 4: Your Personalized Results")
 
-                # Results placeholder
-                results_container = gr.HTML("""
-                <div style="text-align: center; padding: 60px 20px; color: var(--vt-muted);">
-                    <div style="font-size: 48px; margin-bottom: 16px;">📊</div>
-                    <h3>Ready for Your Analysis?</h3>
-                    <p>Click "Calculate My Immigration ROI" to see your personalized results</p>
+                # KPI Grid (hidden initially)
+                kpi_grid = gr.HTML("""
+                <div class="kpi-grid">
+                    <div class="kpi-card">
+                        <div class="label">💰 Payback Period</div>
+                        <div class="value">—</div>
+                        <div class="vt-note">Time to break even on your investment</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">🚀 5-Year ROI</div>
+                        <div class="value">—</div>
+                        <div class="vt-note">Total return on investment</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">💎 Net Present Value</div>
+                        <div class="value">—</div>
+                        <div class="vt-note">Today's value of future returns</div>
+                    </div>
+                    <div class="kpi-card">
+                        <div class="label">📈 Internal Rate of Return</div>
+                        <div class="value">—</div>
+                        <div class="vt-note">Annualized rate of return</div>
+                    </div>
                 </div>
-                """)
-
-                # KPI Dashboard (hidden initially)
-                kpi_dashboard = gr.HTML("", visible=False)
+                """, visible=False)
 
                 # Personalized Insights (hidden initially)
                 personalized_insights = gr.HTML("", visible=False)
@@ -1311,7 +1357,7 @@ def create_immigration_roi_app_v3():
                 # Generate personalized insights
                 insights = generate_personalized_insights(profile, dest, result)
 
-                # Create KPI dashboard
+                # Create KPI grid
                 payback_str = f"{result['payback_years']:.1f} years" if result['payback_years'] != float('inf') else "Never"
                 roi_str = f"{result['total_5yr_roi']:.1f}%"
                 npv_str = f"€{result['risk_adjusted_npv']:,.0f}"
@@ -1332,18 +1378,18 @@ def create_immigration_roi_app_v3():
                     success_message = "⚠️ Consider optimizing your strategy before proceeding."
 
                 kpi_html = f"""
-                <div class="vt-grid">
-                    <div class="vt-kpi" style="border-left: 4px solid {success_color};">
+                <div class="kpi-grid">
+                    <div class="kpi-card {success_level}">
                         <div class="label">💰 Payback Period</div>
-                        <div class="value" style="color: {success_color};">{payback_str}</div>
+                        <div class="value">{payback_str}</div>
                         <div class="vt-note">Time to break even on your investment</div>
                     </div>
-                    <div class="vt-kpi" style="border-left: 4px solid {success_color};">
+                    <div class="kpi-card {success_level}">
                         <div class="label">🚀 5-Year ROI</div>
-                        <div class="value" style="color: {success_color}; font-size: 32px;">{roi_str}</div>
+                        <div class="value">{roi_str}</div>
                         <div class="vt-note">Total return on investment</div>
                     </div>
-                    <div class="vt-kpi">
+                    <div class="kpi-card">
                         <div class="label">💎 Net Present Value</div>
                         <div class="value">{npv_str}</div>
                         <div class="vt-note">Today's value of future returns</div>
@@ -1354,10 +1400,8 @@ def create_immigration_roi_app_v3():
                         <div class="vt-note">Annualized rate of return</div>
                     </div>
                 </div>
-                <div style="text-align: center; padding: 20px; margin: 20px 0; background: rgba(16,185,129,0.05); border-radius: 12px; border: 2px solid rgba(16,185,129,0.2);">
-                    <div style="font-size: 18px; font-weight: 600; color: {success_color}; margin-bottom: 8px;">
-                        {success_message}
-                    </div>
+                <div class="success-alert {success_level}">
+                    {success_message}
                 </div>
                 """
 
@@ -1574,7 +1618,6 @@ def create_immigration_roi_app_v3():
                 """
 
                 return (
-                    "", # Hide placeholder
                     gr.update(value=kpi_html, visible=True),
                     gr.update(value=insights_html, visible=True),
                     gr.update(value=fig, visible=True),
@@ -1588,14 +1631,13 @@ def create_immigration_roi_app_v3():
 
             except Exception as e:
                 error_html = f"""
-                <div class="vt-kpi" style="border-left: 4px solid #EF4444;">
-                    <div class="value" style="color: #EF4444;">❌ Calculation Error</div>
+                <div class="kpi-card error">
+                    <div class="value">❌ Calculation Error</div>
                     <div class="vt-note">{str(e)}</div>
                 </div>
                 """
                 return (
                     error_html,
-                    gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
@@ -1614,7 +1656,7 @@ def create_immigration_roi_app_v3():
                 rev_mult, margin_delta, capex_once, horizon_m, discount_a, success
             ],
             outputs=[
-                results_container, kpi_dashboard, personalized_insights,
+                kpi_grid, personalized_insights,
                 main_chart, comparison_chart, roi_gauge_chart,
                 viral_sharing, lead_capture_modal, next_steps_cta,
                 calculation_result
