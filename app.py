@@ -1,6 +1,5 @@
 # app.py
 # VisaTier 3.0 — Enhanced Immigration ROI Simulator with Lead Generation
-# Добавлены: лидогенерация, персонализация, вирусность, улучшенные рекомендации
 
 import math
 import numpy as np
@@ -513,9 +512,17 @@ def add_animations():
         observer.observe(el);
     });
     document.querySelectorAll('.cta-button').forEach(button => {
-        button.addEventListener('click', function() {
+        button.addEventListener('click', async function() {
+            const originalText = this.innerHTML;
             this.innerHTML = 'Loading...';
             this.disabled = true;
+            try {
+                // Placeholder for real asynchronous action
+                await new Promise(resolve => setTimeout(resolve, 1000));
+            } finally {
+                this.innerHTML = originalText;
+                this.disabled = false;
+            }
         });
     });
     </script>
