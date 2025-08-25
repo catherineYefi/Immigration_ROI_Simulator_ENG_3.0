@@ -574,10 +574,15 @@ CSS_ENHANCED = """
     --vt-warning: #F59E0B; --vt-ink: #0F172A; --vt-muted: #64748B; --radius: 16px;
     --vt-success: #10B981; --vt-purple: #8B5CF6;
 }
+
 .gradio-container { max-width: 1400px !important; margin: 0 auto; }
 .vt-header {
     display: flex; justify-content: space-between; align-items: center;
     background: var(--vt-ink); color: #CBD5E1; padding: 16px; border-radius: 12px;
+}
+.vt-header .right {
+    color: #FFFFFF;
+    text-align: right;
 }
 .nav-links { display: flex; gap: 16px; align-items: center; }
 .nav-links a { color: #CBD5E1; text-decoration: none; }
@@ -587,48 +592,59 @@ CSS_ENHANCED = """
     background: rgba(0,0,0,0.8); z-index: 1000; display: none;
     align-items: center; justify-content: center;
 }
+
 .lead-capture-modal {
     background: white; padding: 32px; border-radius: 20px; max-width: 500px;
     margin: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
     animation: slideIn 0.3s ease-out;
 }
+
 @keyframes slideIn {
     from { opacity: 0; transform: translateY(-30px); }
     to { opacity: 1; transform: translateY(0); }
 }
+
 .profile-selector {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
     gap: 12px; margin: 16px 0;
 }
+
 .profile-card {
     padding: 16px; border: 2px solid #E2E8F0; border-radius: 12px;
     text-align: center; cursor: pointer; transition: all 0.3s ease;
     background: linear-gradient(135deg, #FFFFFF, #F8FAFC);
 }
+
 .profile-card:hover {
     border-color: var(--vt-primary); transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
 }
+
 .profile-card.selected {
     border-color: var(--vt-primary); background: linear-gradient(135deg, #EBF4FF, #DBEAFE);
 }
+
 .viral-share-section {
     background: linear-gradient(135deg, #8B5CF6, #6366F1);
     color: white; padding: 20px; border-radius: 16px; margin: 20px 0;
 }
+
 .share-buttons {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
     gap: 12px; margin: 16px 0;
 }
+
 .share-button {
     padding: 12px 16px; border-radius: 8px; text-align: center;
     font-weight: 600; cursor: pointer; transition: all 0.3s ease;
     border: none; color: white;
 }
+
 .share-linkedin { background: #0077B5; }
 .share-twitter { background: #1DA1F2; }
 .share-whatsapp { background: #25D366; }
 .share-telegram { background: #0088cc; }
+
 .kpi-grid {
     display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
     gap: 16px; margin: 20px 0;
@@ -654,6 +670,7 @@ CSS_ENHANCED = """
 .kpi-card.moderate .value { color: var(--vt-muted); }
 .kpi-card.error { border-left: 4px solid var(--vt-danger); }
 .kpi-card.error .value { color: var(--vt-danger); }
+
 .success-alert {
     text-align: center; padding: 20px; margin: 20px 0;
     border-radius: 12px; border: 2px solid currentColor; font-weight: 600;
@@ -661,15 +678,18 @@ CSS_ENHANCED = """
 .success-alert.exceptional { color: var(--vt-success); background: rgba(16,185,129,0.05); }
 .success-alert.good { color: var(--vt-warning); background: rgba(245,158,11,0.05); }
 .success-alert.moderate { color: var(--vt-muted); background: rgba(107,114,128,0.05); }
+
 .insight-card {
     background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(16,185,129,0.05));
     border: 1px solid rgba(37,99,235,0.2); border-radius: 12px;
     padding: 20px; margin: 12px 0; position: relative;
 }
+
 .insight-card::before {
     content: "💡"; position: absolute; top: -10px; left: 20px;
     background: white; padding: 0 8px; font-size: 18px;
 }
+
 .cta-button {
     background: linear-gradient(135deg, #10B981, #059669);
     color: white; padding: 16px 32px; border-radius: 50px;
@@ -677,24 +697,29 @@ CSS_ENHANCED = """
     cursor: pointer; transition: all 0.3s ease;
     box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
 }
+
 .cta-button:hover {
     transform: translateY(-2px);
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
 }
+
 .progress-bar {
     width: 100%; height: 8px; background: #E2E8F0;
     border-radius: 4px; margin: 16px 0; overflow: hidden;
 }
+
 .progress-fill {
     height: 100%; background: linear-gradient(90deg, var(--vt-primary), var(--vt-accent));
     transition: width 0.5s ease;
 }
+
 .user-journey-step {
     display: flex; align-items: center; margin: 16px 0;
     padding: 16px; background: white; border-radius: 12px;
     border-left: 4px solid var(--vt-primary);
     box-shadow: 0 2px 8px rgba(0,0,0,0.05);
 }
+
 .notification-toast {
     position: fixed; top: 20px; right: 20px; z-index: 1001;
     background: linear-gradient(135deg, #10B981, #059669);
@@ -702,32 +727,39 @@ CSS_ENHANCED = """
     box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
     display: none; animation: slideInRight 0.3s ease-out;
 }
+
 @keyframes slideInRight {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
 }
+
 .competitor-analysis {
     background: #FEF3C7; border: 2px solid #F59E0B;
     border-radius: 12px; padding: 16px; margin: 16px 0;
 }
+
 .urgency-indicator {
     background: linear-gradient(135deg, #EF4444, #DC2626);
     color: white; padding: 8px 16px; border-radius: 20px;
     font-size: 12px; font-weight: 600; display: inline-block;
     animation: pulse 2s infinite;
 }
+
 @keyframes pulse {
     0%, 100% { opacity: 1; }
     50% { opacity: 0.7; }
 }
+
 .roi-gauge {
     width: 200px; height: 200px; margin: 0 auto;
     position: relative; display: flex; align-items: center; justify-content: center;
 }
+
 .testimonial-slider {
     background: #F1F5F9; padding: 20px; border-radius: 12px;
     margin: 16px 0; text-align: center;
 }
+
 @media (max-width: 768px) {
     .profile-selector { grid-template-columns: repeat(2, 1fr); }
     .share-buttons { grid-template-columns: 1fr; }
@@ -1213,6 +1245,7 @@ def create_immigration_roi_app_v3():
                             </div>
                             <p style="margin: 0;">{insight}</p>
                             {visa_html}
+
                         </div>
                         """
                         return html
@@ -1686,6 +1719,7 @@ def create_immigration_roi_app_v3():
                 <h3 style="margin: 0 0 8px 0;">🌍 VisaTier 3.0 - Your Immigration Success Partner</h3>
                 <p style="margin: 0; color: var(--vt-muted);">Trusted by 10,000+ entrepreneurs • $50M+ in optimized relocations</p>
             </div>
+
             <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🚀 Success Stories</h4>
@@ -1695,6 +1729,7 @@ def create_immigration_roi_app_v3():
                         • Elena R: 18-month payback in Estonia
                     </div>
                 </div>
+
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">📊 Platform Stats</h4>
                     <div style="font-size: 14px; color: var(--vt-muted);">
@@ -1703,6 +1738,7 @@ def create_immigration_roi_app_v3():
                         • 95% client satisfaction rate
                     </div>
                 </div>
+
                 <div>
                     <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🎯 Next Steps</h4>
                     <div style="font-size: 14px; color: var(--vt-muted);">
@@ -1712,6 +1748,7 @@ def create_immigration_roi_app_v3():
                     </div>
                 </div>
             </div>
+
             <div style="text-align: center; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #94A3B8;">
                 © 2025 VisaTier — Professional Immigration Advisory •
                 <a href="#" style="color: var(--vt-primary);">Privacy Policy</a> •
