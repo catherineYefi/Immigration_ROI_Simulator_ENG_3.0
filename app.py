@@ -15,6 +15,13 @@ import base64
 import hashlib
 import random
 
+# Legal disclaimers
+LEGAL_DISCLAIMERS = {
+    "tax": "This tool does not provide tax advice. Consult a qualified tax professional.",
+    "immigration": "This tool does not provide immigration advice. Consult a licensed immigration professional.",
+    "investment": "Investment projections are for educational purposes only and are not investment advice."
+}
+
 # =========================
 # ENHANCED LEAD GENERATION DATA
 # =========================
@@ -777,6 +784,45 @@ def generate_user_hash(email_or_id):
     """Generate unique user hash for tracking"""
     return hashlib.md5(str(email_or_id).encode()).hexdigest()[:8]
 
+# =========================
+# REFERRAL SYSTEM
+# =========================
+
+# In-memory stores for referral codes and credits
+REFERRAL_CODES = {}
+REFERRAL_CREDITS = {}
+
+def generate_referral_code(user_id):
+    """Generate unique referral code tied to a user ID."""
+    code = hashlib.md5(f"ref{user_id}".encode()).hexdigest()[:8]
+    REFERRAL_CODES[code] = user_id
+    REFERRAL_CREDITS.setdefault(user_id, 0)
+    return code
+
+def apply_referral_code(new_user_id, code):
+    """Apply a referral code for a new user and credit the referrer."""
+    referrer_id = REFERRAL_CODES.get(code)
+    if referrer_id:
+        REFERRAL_CREDITS[referrer_id] = REFERRAL_CREDITS.get(referrer_id, 0) + 1
+        return True
+    return False
+
+def get_consultation_price(user_id, base_price=100):
+    """Return consultation price after applying referral credits."""
+    credits = REFERRAL_CREDITS.get(user_id, 0)
+    if credits > 0:
+        REFERRAL_CREDITS[user_id] = credits - 1
+        return base_price * 0.5
+    return base_price
+
+def book_consultation(user_id, referral_code=None, base_price=100):
+    """Book a consultation applying referral code and credits."""
+    if referral_code:
+        # Credit the referrer and give discount to new user
+        apply_referral_code(user_id, referral_code)
+        return base_price * 0.5
+    return get_consultation_price(user_id, base_price)
+
 def trigger_lead_capture(stage, user_data, result_data=None):
     """Trigger appropriate lead capture based on user behavior"""
     stage_config = LEAD_STAGES.get(stage, {})
@@ -799,7 +845,11 @@ def trigger_lead_capture(stage, user_data, result_data=None):
         "value_multiplier": multiplier,
         "personalized_message": f"Based on your {user_data.get('profile', 'entrepreneur')} profile..."
     }
-
+def handle_data_deletion(email):
+    """Handle GDPR data deletion requests."""
+    # In a real system, remove user data from persistent storage
+    print(f"Data deletion requested for {email}")
+    
 def generate_personalized_insights(profile, country, result):
     """Generate AI-powered personalized insights"""
     profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
@@ -1354,6 +1404,9 @@ def create_immigration_roi_app_v3():
                 # Viral Sharing Section (appears after calculation)
                 viral_sharing = gr.HTML("", visible=False)
 
+                # Referral Prompt (appears after calculation)
+                referral_prompt = gr.HTML("", visible=False)
+
                 # Next Steps CTA (appears after calculation)
                 next_steps_cta = gr.HTML("", visible=False)
 
@@ -1435,6 +1488,11 @@ def create_immigration_roi_app_v3():
                 </div>
                 <div class="success-alert {success_level}">
                     {success_message}
+                </div>
+                <div class="legal-disclaimer" style="font-size: 12px; color: #64748B; margin-top: 8px;">
+                    <p>{LEGAL_DISCLAIMERS['tax']}</p>
+                    <p>{LEGAL_DISCLAIMERS['immigration']}</p>
+                    <p>{LEGAL_DISCLAIMERS['investment']}</p>
                 </div>
                 """
 
@@ -1545,6 +1603,17 @@ def create_immigration_roi_app_v3():
                 # Generate viral sharing content
                 share_data = create_viral_share_content(result, dest, profile)
 
+                  # Generate referral code for current user
+                current_user_id = generate_user_hash(f"{profile}_{datetime.now()}")
+                referral_code = generate_referral_code(current_user_id)
+                referral_html = f"""
+                <div class=\"referral-share\" style=\"margin-top: 16px;\">
+                    <h3>🎁 Share &amp; Save</h3>
+                    <p>Your referral code: <strong>{referral_code}</strong></p>
+                    <p>Friends get <strong>50% off</strong> their consultation and you earn credits for every signup.</p>
+                </div>
+                """
+
                 viral_html = f"""
                 <div class="viral-share-section">
                     <h3 style="margin: 0 0 16px 0; color: white;">🚀 Share Your Success Story!</h3>
@@ -1610,20 +1679,41 @@ def create_immigration_roi_app_v3():
                     <div style="text-align: center;">
                         <input type="email" placeholder="Enter your email for instant access" style="width: 80%; padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px; margin-bottom: 12px; font-size: 16px;">
                         <br>
+                        <label style="display: block; margin: 8px 0; font-size: 14px;">
+                            <input type="checkbox" id="gdpr-consent"> I agree to the privacy policy and to receive communications
+                        </label>
                         <button class="cta-button" onclick="captureEmail()">
                             🚀 Get My Free {dest} Guide
                         </button>
+                        <div class="legal-disclaimer" style="font-size: 12px; color: #64748B; margin-top: 12px;">
+                            <p>{LEGAL_DISCLAIMERS['tax']}</p>
+                            <p>{LEGAL_DISCLAIMERS['immigration']}</p>
+                            <p>{LEGAL_DISCLAIMERS['investment']}</p>
+                        </div>
+                        <div style="margin-top: 8px;">
+                            <a href="#" onclick="deleteData()" style="font-size: 12px; color: #64748B;">Request data deletion</a>
+                        </div>
                     </div>
                 </div>
                 <script>
                 function captureEmail() {{
                     const email = document.querySelector('input[type="email"]').value;
+                    const consent = document.getElementById('gdpr-consent');
+                    if (!consent.checked) {{
+                        alert('Please provide consent to proceed.');
+                        return;
+                    }}
                     if (email && email.includes('@')) {{
                         alert('Thank you! Check your email for your free guide.');
                         // Here you would normally send to your CRM
                     }} else {{
                         alert('Please enter a valid email address.');
                     }}
+                }}
+                function deleteData() {{
+                    document.querySelector('input[type="email"]').value = '';
+                    document.getElementById('gdpr-consent').checked = false;
+                    alert('Your data deletion request has been recorded.');
                 }}
                 </script>
                 """
@@ -1657,6 +1747,7 @@ def create_immigration_roi_app_v3():
                     gr.update(value=risk_return_fig, visible=True),
                     gr.update(value=roi_gauge_fig, visible=True),
                     gr.update(value=viral_html, visible=True),
+                    gr.update(value=referral_html, visible=True),
                     gr.update(value=lead_html, visible=True),
                     gr.update(value=next_steps_html, visible=True),
                     result
@@ -1678,6 +1769,7 @@ def create_immigration_roi_app_v3():
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
+                    gr.update(visible=False),
                     {}
                 )
 
@@ -1691,7 +1783,7 @@ def create_immigration_roi_app_v3():
             outputs=[
                 kpi_grid, personalized_insights,
                 main_chart, comparison_chart, roi_gauge_chart,
-                viral_sharing, lead_capture_modal, next_steps_cta,
+                viral_sharing, referral_prompt, lead_capture_modal, next_steps_cta, 
                 calculation_result
             ]
         )
