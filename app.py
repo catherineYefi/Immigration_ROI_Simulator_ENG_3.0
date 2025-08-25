@@ -1394,7 +1394,7 @@ def create_immigration_roi_app_v3():
                         <div class="value">{npv_str}</div>
                         <div class="vt-note">Today's value of future returns</div>
                     </div>
-                    <div class="vt-kpi">
+                    <div class="kpi-card {success_level}">
                         <div class="label">📈 Internal Rate of Return</div>
                         <div class="value">{irr_str}</div>
                         <div class="vt-note">Annualized rate of return</div>
