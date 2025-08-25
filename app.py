@@ -914,6 +914,8 @@ def compute_enhanced_monthly_delta_cashflow(
             payback_m = m
 
     npv = sum(cf / ((1 + mr) ** t) for t, cf in enumerate(cash))
+    risk_adjusted_npv = calculate_risk_adjusted_npv(npv, dest)
+    roi5y = (cum / capex_once) * 100
 
     # IRR calculation
     def irr_bisection(cash_flows, lo=-0.99, hi=5.0, iterations=100, tolerance=1e-7):
