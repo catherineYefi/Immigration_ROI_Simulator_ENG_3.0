@@ -18,208 +18,89 @@ from fastapi import FastAPI
 from pydantic import BaseModel
 
 CSS = """
+/* Root variables */
 :root {
-    --vt-primary: #2563EB; --vt-accent: #10B981; --vt-danger: #EF4444;
-    --vt-warning: #F59E0B; --vt-ink: #0F172A; --vt-muted: #64748B; --radius: 16px;
-    --vt-success: #10B981; --vt-purple: #8B5CF6;
+    --vt-primary: #2563EB;
+    --vt-secondary: #0F172A;
+    --vt-muted: #64748B;
+    --vt-radius: 16px;
+    --vt-background: #F8FAFC;
+    --vt-surface: #FFFFFF;
 }
 
-.gradio-container { max-width: 1400px !important; margin: 0 auto; }
-.vt-header {
-    display: flex; justify-content: space-between; align-items: center;
-    background: var(--vt-ink); color: #CBD5E1; padding: 16px; border-radius: 12px;
-}
-.vt-header .right {
+/* Header & footer */
+.vt-header,
+.vt-footer {
+    background: var(--vt-secondary);
     color: #FFFFFF;
-    text-align: right;
-}
-.nav-links { display: flex; gap: 16px; align-items: center; }
-.nav-links a { color: #CBD5E1; text-decoration: none; }
-.title { font-size: 24px; font-weight: 700; color: #FFFFFF; }
-.lead-capture-overlay {
-    position: fixed; top: 0; left: 0; width: 100%; height: 100%;
-    background: rgba(0,0,0,0.8); z-index: 1000; display: none;
-    align-items: center; justify-content: center;
+    padding: 1rem 1.5rem;
+    border-radius: var(--vt-radius);
 }
 
-.lead-capture-modal {
-    background: white; padding: 32px; border-radius: 20px; max-width: 500px;
-    margin: 20px; box-shadow: 0 25px 50px rgba(0,0,0,0.3);
-    animation: slideIn 0.3s ease-out;
+.vt-footer {
+    background: #F1F5F9;
+    color: var(--vt-muted);
 }
 
-@keyframes slideIn {
-    from { opacity: 0; transform: translateY(-30px); }
-    to { opacity: 1; transform: translateY(0); }
+/* Hero section & badges */
+.vt-hero {
+    text-align: center;
+    padding: 2rem 1rem;
 }
 
-.profile-selector {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
-    gap: 12px; margin: 16px 0;
+.vt-hero .badges {
+    display: flex;
+    gap: 0.5rem;
+    flex-wrap: wrap;
+    justify-content: center;
+    margin-top: 1rem;
 }
 
-.profile-card {
-    padding: 16px; border: 2px solid #E2E8F0; border-radius: 12px;
-    text-align: center; cursor: pointer; transition: all 0.3s ease;
-    background: linear-gradient(135deg, #FFFFFF, #F8FAFC);
+.vt-hero .badge {
+    background: var(--vt-primary);
+    color: #FFFFFF;
+    padding: 0.25rem 0.75rem;
+    border-radius: 9999px;
+    font-size: 0.75rem;
 }
 
-.profile-card:hover {
-    border-color: var(--vt-primary); transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(37, 99, 235, 0.15);
+/* Method and notes sections */
+.method,
+.notes {
+    background: var(--vt-surface);
+    border-radius: var(--vt-radius);
+    padding: 1.25rem;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
 }
 
-.profile-card.selected {
-    border-color: var(--vt-primary); background: linear-gradient(135deg, #EBF4FF, #DBEAFE);
-}
-
-.viral-share-section {
-    background: linear-gradient(135deg, #8B5CF6, #6366F1);
-    color: white; padding: 20px; border-radius: 16px; margin: 20px 0;
-}
-
-.share-buttons {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(150px, 1fr));
-    gap: 12px; margin: 16px 0;
-}
-
-.share-button {
-    padding: 12px 16px; border-radius: 8px; text-align: center;
-    font-weight: 600; cursor: pointer; transition: all 0.3s ease;
-    border: none; color: white;
-}
-
-.share-linkedin { background: #0077B5; }
-.share-twitter { background: #1DA1F2; }
-.share-whatsapp { background: #25D366; }
-.share-telegram { background: #0088cc; }
-
-.kpi-grid {
-    display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
-    gap: 16px; margin: 20px 0;
+/* KPI tiles */
+    display: grid;
+    gap: 1rem;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
 .kpi-card {
-    background: #FFFFFF; border-radius: 12px; padding: 20px;
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-.kpi-card .label {
-    font-size: 14px; color: var(--vt-muted); margin-bottom: 8px;
-}
-.kpi-card .value {
-    font-size: 24px; font-weight: 700; color: var(--vt-ink); margin-bottom: 4px;
-}
-.kpi-card .vt-note {
-    font-size: 12px; color: var(--vt-muted);
-}
-.kpi-card.exceptional { border-left: 4px solid var(--vt-success); }
-.kpi-card.exceptional .value { color: var(--vt-success); }
-.kpi-card.good { border-left: 4px solid var(--vt-warning); }
-.kpi-card.good .value { color: var(--vt-warning); }
-.kpi-card.moderate { border-left: 4px solid var(--vt-muted); }
-.kpi-card.moderate .value { color: var(--vt-muted); }
-.kpi-card.error { border-left: 4px solid var(--vt-danger); }
-.kpi-card.error .value { color: var(--vt-danger); }
-
-.success-alert {
-    text-align: center; padding: 20px; margin: 20px 0;
-    border-radius: 12px; border: 2px solid currentColor; font-weight: 600;
-}
-.success-alert.exceptional { color: var(--vt-success); background: rgba(16,185,129,0.05); }
-.success-alert.good { color: var(--vt-warning); background: rgba(245,158,11,0.05); }
-.success-alert.moderate { color: var(--vt-muted); background: rgba(107,114,128,0.05); }
-
-.insight-card {
-    background: linear-gradient(135deg, rgba(37,99,235,0.05), rgba(16,185,129,0.05));
-    border: 1px solid rgba(37,99,235,0.2); border-radius: 12px;
-    padding: 20px; margin: 12px 0; position: relative;
+    background: var(--vt-surface);
+    border-radius: var(--vt-radius);
+    text-align: center;
+    padding: 1rem;
+    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+/* Panel spacing */
+.gradio-container {
+    max-width: 1400px !important;
+    margin: 0 auto;
 }
 
-.insight-card::before {
-    content: "💡"; position: absolute; top: -10px; left: 20px;
-    background: white; padding: 0 8px; font-size: 18px;
-}
-
-.cta-button {
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: white; padding: 16px 32px; border-radius: 50px;
-    font-weight: 700; font-size: 16px; border: none;
-    cursor: pointer; transition: all 0.3s ease;
-    box-shadow: 0 4px 15px rgba(16, 185, 129, 0.3);
-}
-
-.cta-button:hover {
-    transform: translateY(-2px);
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.4);
-}
-
-.progress-bar {
-    width: 100%; height: 8px; background: #E2E8F0;
-    border-radius: 4px; margin: 16px 0; overflow: hidden;
-}
-
-.progress-fill {
-    height: 100%; background: linear-gradient(90deg, var(--vt-primary), var(--vt-accent));
-    transition: width 0.5s ease;
-}
-
-.user-journey-step {
-    display: flex; align-items: center; margin: 16px 0;
-    padding: 16px; background: white; border-radius: 12px;
-    border-left: 4px solid var(--vt-primary);
-    box-shadow: 0 2px 8px rgba(0,0,0,0.05);
-}
-
-.notification-toast {
-    position: fixed; top: 20px; right: 20px; z-index: 1001;
-    background: linear-gradient(135deg, #10B981, #059669);
-    color: white; padding: 16px 24px; border-radius: 12px;
-    box-shadow: 0 8px 25px rgba(16, 185, 129, 0.3);
-    display: none; animation: slideInRight 0.3s ease-out;
-}
-
-@keyframes slideInRight {
-    from { transform: translateX(100%); }
-    to { transform: translateX(0); }
-}
-
-.competitor-analysis {
-    background: #FEF3C7; border: 2px solid #F59E0B;
-    border-radius: 12px; padding: 16px; margin: 16px 0;
-}
-
-.urgency-indicator {
-    background: linear-gradient(135deg, #EF4444, #DC2626);
-    color: white; padding: 8px 16px; border-radius: 20px;
-    font-size: 12px; font-weight: 600; display: inline-block;
-    animation: pulse 2s infinite;
-}
-
-@keyframes pulse {
-    0%, 100% { opacity: 1; }
-    50% { opacity: 0.7; }
-}
-
-.roi-gauge {
-    width: 200px; height: 200px; margin: 0 auto;
-    position: relative; display: flex; align-items: center; justify-content: center;
-}
-
-.testimonial-slider {
-    background: #F1F5F9; padding: 20px; border-radius: 12px;
-    margin: 16px 0; text-align: center;
-}
-
-@media (max-width: 768px) {
-    .profile-selector { grid-template-columns: repeat(2, 1fr); }
-    .share-buttons { grid-template-columns: 1fr; }
-    .lead-capture-modal { margin: 10px; padding: 20px; }
-    .vt-header { flex-direction: column; text-align: center; }
-    .nav-links { margin-top: 12px; }
+.gradio-container .gr-block {
+    margin-bottom: 1.5rem;
 }
 """
 
-THEME = gr.themes.Soft()
-
+THEME = gr.themes.Soft(primary_hue="blue", neutral_hue="slate").set(
+    body_background_fill="#F8FAFC",
+    body_text_color="#0F172A",
+    button_primary_background_fill="#2563EB",
+    button_primary_background_fill_hover="#1D4ED8",
+)
 
 # Legal disclaimers
 LEGAL_DISCLAIMERS = {
@@ -1219,7 +1100,7 @@ def compute_enhanced_monthly_delta_cashflow(
 # =========================
 
 def create_immigration_roi_app_v3():
-    with gr.Blocks(theme=THEME, css=CSS, title="VisaTier 3.0 - Ultimate Immigration ROI Calculator") as demo:
+    with gr.Blocks(theme=THEME, css=CSS) as demo:
 
         # State management
         user_profile = gr.State("startup_founder")
