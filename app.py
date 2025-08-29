@@ -42,6 +42,29 @@ CSS = """
     color: var(--vt-muted);
 }
 
+/* Header navigation */
+.title {
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1rem;
+    align-items: center;
+}
+
+.nav-links a {
+    color: #FFFFFF;
+    text-decoration: none;
+    font-size: 0.875rem;
+}
+
+.vt-header .right {
+    display: flex;
+    align-items: center;
+    gap: 1rem;
+}
 /* Hero section & badges */
 .vt-hero {
     text-align: center;
@@ -74,16 +97,20 @@ CSS = """
 }
 
 /* KPI tiles */
+.kpi-tiles {
     display: grid;
     gap: 1rem;
     grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
 }
+
 .kpi-card {
     background: var(--vt-surface);
     border-radius: var(--vt-radius);
     text-align: center;
     padding: 1rem;
     box-shadow: 0 1px 2px rgba(0,0,0,0.04);
+}    
+
 /* Panel spacing */
 .gradio-container {
     max-width: 1400px !important;
@@ -92,6 +119,27 @@ CSS = """
 
 .gradio-container .gr-block {
     margin-bottom: 1.5rem;
+}
+
+/* Lead capture overlay */
+.lead-capture-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(0, 0, 0, 0.5);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+}
+
+/* Notes */
+.vt-note {
+    font-size: 0.75rem;
+    color: var(--vt-muted);
+    margin-top: 0.25rem;
 }
 """
 
