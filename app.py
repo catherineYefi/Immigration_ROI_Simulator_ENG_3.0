@@ -143,43 +143,6 @@ COUNTRY_CONFIG_ENHANCED = {
         "partnership_score": 85
     },
     "Portugal": {
-        "corp_tax": 0.21, "pers_tax": 0.28, "rev_mult": 1.7, "margin_delta_pp": 3.0,
-        "living_month": 4000.0, "ongoing_month": 1000.0, "setup_once": 15000.0,
-        "currency": "EUR", "inflation": 3.0, "market_growth": 5.0, "ease_business": 7.5,
-        "tax_treaties": 79, "banking_score": 7.8, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 EU gateway with startup visas",
-            "crypto_entrepreneur": "₿ Emerging crypto hub with favorable regulations",
-            "consulting_expert": "💼 Access to EU markets with cost advantages",
-            "saas_founder": "💻 Growing tech scene in Lisbon and Porto",
-            "real_estate": "🏠 Popular Golden Visa program"
-        },
-        "lead_magnets": ["Portugal Visa Guide", "Lisbon Tech Ecosystem", "Golden Visa Cheatsheet"],
-        "partnership_score": 80
-    },
-    "Netherlands": {
-        "corp_tax": 0.25, "pers_tax": 0.30, "rev_mult": 1.9, "margin_delta_pp": 2.5,
-        "living_month": 4500.0, "ongoing_month": 1200.0, "setup_once": 20000.0,
-        "currency": "EUR", "inflation": 3.2, "market_growth": 4.8, "ease_business": 8.6,
-        "tax_treaties": 90, "banking_score": 8.5, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 Strong startup ecosystem with EU access",
-            "crypto_entrepreneur": "₿ Progressive crypto regulations",
-            "consulting_expert": "💼 Gateway to European business networks",
-            "saas_founder": "💻 High-skilled workforce and innovation",
-            "real_estate": "🏠 Stable property market with investor visas"
-        },
-        "lead_magnets": ["Dutch Startup Guide", "EU Market Access", "Amsterdam Tech Map"],
-        "partnership_score": 88
-    }
-}
-
-# =========================
-# ENHANCED COUNTRY DATA (ADD PORTUGAL & NETHERLANDS)
-# =========================
-
-COUNTRY_CONFIG_ENHANCED.update({
-    "Portugal": {
         "corp_tax": 0.21, "pers_tax": 0.48, "rev_mult": 1.6, "margin_delta_pp": 2.5,
         "living_month": 2800.0, "ongoing_month": 700.0, "setup_once": 15000.0,
         "currency": "EUR", "inflation": 3.2, "market_growth": 3.8, "ease_business": 7.4,
