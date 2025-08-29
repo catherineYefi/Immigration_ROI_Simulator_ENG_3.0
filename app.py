@@ -1302,7 +1302,7 @@ def create_immigration_roi_app_v3():
         """
         for profile_id, profile_data in USER_PROFILES.items():
             profile_html += f"""
-            <div class="profile-card" onclick="selectProfile('{profile_id}')">
+            <div class="profile-card" onclick="selectProfile(event, '{profile_id}')">
                 <div style="font-size: 32px; margin-bottom: 8px;">{profile_data['icon']}</div>
                 <div style="font-weight: 600; font-size: 14px;">{profile_data['name']}</div>
                 <div style="font-size: 12px; color: var(--vt-muted); margin-top: 4px;">
@@ -1314,10 +1314,13 @@ def create_immigration_roi_app_v3():
         profile_html += """
         </div>
         <script>
-        function selectProfile(profileId) {
+        function selectProfile(event, profileId) {
             document.querySelectorAll('.profile-card').forEach(card => card.classList.remove('selected'));
-            event.target.closest('.profile-card').classList.add('selected');
-            // Trigger Gradio update
+            const card = event.currentTarget;
+            card.classList.add('selected');
+            const dropdown = gradioApp().getElementById('selected_profile').querySelector('select');
+            dropdown.value = profileId;
+            dropdown.dispatchEvent(new Event('input', { bubbles: true }));
             window.selectedProfile = profileId;
         }
         </script>
@@ -1329,7 +1332,8 @@ def create_immigration_roi_app_v3():
             list(USER_PROFILES.keys()),
             value="startup_founder",
             label="Selected Profile",
-            visible=False
+            visible=False,
+            elem_id="selected_profile"
         )
 
         # Progress indicator
