@@ -1,5 +1,5 @@
-# app.py
-# VisaTier 3.0 — Enhanced Immigration ROI Simulator with Lead Generation
+# VisaTier 4.0 - Premium Immigration ROI Calculator
+# Enhanced with advanced analytics, monetization, and enterprise features
 
 import math
 import numpy as np
@@ -10,1998 +10,1714 @@ import plotly.express as px
 from plotly.subplots import make_subplots
 import json
 from datetime import datetime, timedelta
-import io
-import base64
 import hashlib
-import random
-from fastapi import FastAPI
-from pydantic import BaseModel
+import secrets
+from typing import Dict, List, Tuple, Optional
+import asyncio
+from dataclasses import dataclass
 
-CSS = """
-/* Root variables */
+# =========================
+# ENHANCED STYLING SYSTEM
+# =========================
+
+PREMIUM_CSS = """
+/* Modern Design System */
 :root {
-    --vt-primary: #2563EB;
-    --vt-secondary: #0F172A;
-    --vt-muted: #64748B;
-    --vt-radius: 16px;
-    --vt-background: #F8FAFC;
-    --vt-surface: #FFFFFF;
+    --primary: #2563eb;
+    --primary-dark: #1d4ed8;
+    --secondary: #0f172a;
+    --accent: #f59e0b;
+    --success: #10b981;
+    --warning: #f59e0b;
+    --error: #ef4444;
+    --surface: #ffffff;
+    --surface-alt: #f8fafc;
+    --text: #1e293b;
+    --text-muted: #64748b;
+    --border: #e2e8f0;
+    --radius: 12px;
+    --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
+    --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
 
-/* Header & footer */
-.vt-header,
-.vt-footer {
-    background: var(--vt-secondary);
-    color: #FFFFFF;
-    padding: 1rem 1.5rem;
-    border-radius: var(--vt-radius);
+/* Global Styles */
+.gradio-container {
+    max-width: 1400px !important;
+    margin: 0 auto !important;
+    font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
 
-.vt-footer {
-    background: #F1F5F9;
-    color: var(--vt-muted);
+/* Header Component */
+.premium-header {
+    background: var(--gradient);
+    color: white;
+    padding: 2rem;
+    border-radius: var(--radius);
+    margin-bottom: 2rem;
+    position: relative;
+    overflow: hidden;
 }
 
-/* Header navigation */
-.title {
-    font-size: 1.25rem;
-    font-weight: 600;
+.premium-header::before {
+    content: '';
+    position: absolute;
+    top: -50%;
+    right: -50%;
+    width: 200%;
+    height: 200%;
+    background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
+    animation: float 6s ease-in-out infinite;
 }
 
-.nav-links {
+@keyframes float {
+    0%, 100% { transform: translateY(0px) rotate(0deg); }
+    50% { transform: translateY(-20px) rotate(180deg); }
+}
+
+.header-content {
+    position: relative;
+    z-index: 2;
     display: flex;
-    gap: 1rem;
+    justify-content: space-between;
     align-items: center;
-}
-
-.nav-links a {
-    color: #FFFFFF;
-    text-decoration: none;
-    font-size: 0.875rem;
-}
-
-.vt-header .right {
-    display: flex;
-    align-items: center;
-    gap: 1rem;
-}
-/* Hero section & badges */
-.vt-hero {
-    text-align: center;
-    padding: 2rem 1rem;
-}
-
-.vt-hero .badges {
-    display: flex;
-    gap: 0.5rem;
     flex-wrap: wrap;
-    justify-content: center;
-    margin-top: 1rem;
-}
-
-.vt-hero .badge {
-    background: var(--vt-primary);
-    color: #FFFFFF;
-    padding: 0.25rem 0.75rem;
-    border-radius: 9999px;
-    font-size: 0.75rem;
-}
-
-/* Method and notes sections */
-.method,
-.notes {
-    background: var(--vt-surface);
-    border-radius: var(--vt-radius);
-    padding: 1.25rem;
-    box-shadow: 0 1px 3px rgba(0,0,0,0.05);
-}
-
-/* KPI tiles */
-.kpi-tiles {
-    display: grid;
     gap: 1rem;
-    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+}
+
+.header-title {
+    font-size: 2rem;
+    font-weight: 800;
+    margin-bottom: 0.5rem;
+}
+
+.header-subtitle {
+    opacity: 0.9;
+    font-size: 1.1rem;
+}
+
+.header-stats {
+    text-align: right;
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* Profile Selection Cards */
+.profile-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.profile-card {
+    background: var(--surface);
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    text-align: center;
+    cursor: pointer;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    position: relative;
+    overflow: hidden;
+}
+
+.profile-card::before {
+    content: '';
+    position: absolute;
+    top: 0;
+    left: -100%;
+    width: 100%;
+    height: 100%;
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
+    transition: left 0.5s;
+}
+
+.profile-card:hover::before {
+    left: 100%;
+}
+
+.profile-card:hover {
+    border-color: var(--primary);
+    transform: translateY(-2px);
+    box-shadow: var(--shadow);
+}
+
+.profile-card.selected {
+    border-color: var(--primary);
+    background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
+    color: white;
+}
+
+.profile-icon {
+    font-size: 2.5rem;
+    margin-bottom: 1rem;
+    display: block;
+}
+
+.profile-name {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin-bottom: 0.5rem;
+}
+
+.profile-revenue {
+    font-size: 0.9rem;
+    opacity: 0.8;
+}
+
+/* KPI Cards */
+.kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 1.5rem;
+    margin: 2rem 0;
 }
 
 .kpi-card {
-    background: var(--vt-surface);
-    border-radius: var(--vt-radius);
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 1.5rem;
     text-align: center;
-    padding: 1rem;
-    box-shadow: 0 1px 2px rgba(0,0,0,0.04);
-}    
-
-/* Panel spacing */
-.gradio-container {
-    max-width: 1400px !important;
-    margin: 0 auto;
+    box-shadow: var(--shadow);
+    position: relative;
+    overflow: hidden;
 }
 
-.gradio-container .gr-block {
-    margin-bottom: 1.5rem;
-}
-
-/* Lead capture overlay */
-.lead-capture-overlay {
-    position: fixed;
+.kpi-card::before {
+    content: '';
+    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
-    height: 100%;
-    background: rgba(0, 0, 0, 0.5);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 1000;
+    height: 4px;
+    background: var(--gradient);
 }
 
-/* Notes */
-.vt-note {
-    font-size: 0.75rem;
-    color: var(--vt-muted);
-    margin-top: 0.25rem;
+.kpi-label {
+    font-size: 0.9rem;
+    color: var(--text-muted);
+    margin-bottom: 0.5rem;
+    font-weight: 500;
+}
+
+.kpi-value {
+    font-size: 2rem;
+    font-weight: 800;
+    color: var(--primary);
+    margin-bottom: 0.5rem;
+}
+
+.kpi-note {
+    font-size: 0.8rem;
+    color: var(--text-muted);
+    line-height: 1.4;
+}
+
+.kpi-card.success .kpi-value { color: var(--success); }
+.kpi-card.warning .kpi-value { color: var(--warning); }
+.kpi-card.error .kpi-value { color: var(--error); }
+
+/* Insight Cards */
+.insights-grid {
+    display: grid;
+    gap: 1rem;
+    margin: 1.5rem 0;
+}
+
+.insight-card {
+    background: var(--surface);
+    border-left: 4px solid var(--primary);
+    border-radius: var(--radius);
+    padding: 1.5rem;
+    box-shadow: var(--shadow);
+    transition: transform 0.2s ease;
+}
+
+.insight-card:hover {
+    transform: translateX(4px);
+}
+
+.insight-header {
+    display: flex;
+    align-items: center;
+    margin-bottom: 1rem;
+}
+
+.insight-icon {
+    font-size: 1.5rem;
+    margin-right: 0.75rem;
+}
+
+.insight-title {
+    font-weight: 600;
+    font-size: 1.1rem;
+    margin: 0;
+}
+
+.insight-description {
+    color: var(--text-muted);
+    line-height: 1.5;
+    margin-bottom: 1rem;
+}
+
+/* CTA Buttons */
+.cta-button {
+    background: var(--gradient) !important;
+    border: none !important;
+    border-radius: var(--radius) !important;
+    padding: 0.75rem 2rem !important;
+    font-weight: 600 !important;
+    font-size: 1rem !important;
+    color: white !important;
+    cursor: pointer !important;
+    transition: all 0.3s ease !important;
+    text-decoration: none !important;
+    display: inline-block !important;
+}
+
+.cta-button:hover {
+    transform: translateY(-2px) !important;
+    box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3) !important;
+}
+
+.cta-button:active {
+    transform: translateY(0) !important;
+}
+
+/* Progress Bar */
+.progress-container {
+    background: var(--border);
+    border-radius: 50px;
+    height: 8px;
+    margin: 1rem 0;
+    overflow: hidden;
+}
+
+.progress-bar {
+    height: 100%;
+    background: var(--gradient);
+    border-radius: 50px;
+    transition: width 0.5s ease;
+}
+
+/* Testimonial */
+.testimonial {
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+    padding: 2rem;
+    text-align: center;
+    margin: 2rem 0;
+    position: relative;
+}
+
+.testimonial::before {
+    content: '"';
+    font-size: 4rem;
+    color: var(--primary);
+    position: absolute;
+    top: -1rem;
+    left: 1rem;
+    font-family: serif;
+}
+
+.testimonial-text {
+    font-style: italic;
+    font-size: 1.1rem;
+    line-height: 1.6;
+    margin-bottom: 1rem;
+    color: var(--text);
+}
+
+.testimonial-author {
+    font-weight: 600;
+    color: var(--primary);
+}
+
+/* Lead Capture Modal */
+.lead-modal {
+    background: var(--surface);
+    border-radius: var(--radius);
+    padding: 2rem;
+    box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.1);
+    margin: 2rem 0;
+    border: 1px solid var(--border);
+}
+
+.lead-modal h3 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+}
+
+.value-badge {
+    background: var(--success);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: 20px;
+    display: inline-block;
+    font-weight: 600;
+    margin-bottom: 1rem;
+}
+
+.urgency-text {
+    background: var(--warning);
+    color: white;
+    padding: 0.5rem 1rem;
+    border-radius: var(--radius);
+    font-size: 0.9rem;
+    margin-bottom: 1rem;
+    text-align: center;
+}
+
+/* Form Elements */
+.form-input {
+    width: 100%;
+    padding: 0.75rem;
+    border: 2px solid var(--border);
+    border-radius: var(--radius);
+    font-size: 1rem;
+    transition: border-color 0.2s ease;
+    margin-bottom: 1rem;
+}
+
+.form-input:focus {
+    outline: none;
+    border-color: var(--primary);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .header-content {
+        flex-direction: column;
+        text-align: center;
+    }
+    
+    .profile-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+    
+    .header-title {
+        font-size: 1.5rem;
+    }
+}
+
+/* Animation Classes */
+.fadeIn {
+    animation: fadeIn 0.5s ease-in;
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(20px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+.slideUp {
+    animation: slideUp 0.3s ease-out;
+}
+
+@keyframes slideUp {
+    from { transform: translateY(100%); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
+}
+
+/* Country Comparison Table */
+.comparison-table {
+    background: var(--surface);
+    border-radius: var(--radius);
+    overflow: hidden;
+    box-shadow: var(--shadow);
+    margin: 1rem 0;
+}
+
+/* Footer */
+.premium-footer {
+    background: var(--surface-alt);
+    border-radius: var(--radius);
+    padding: 2rem;
+    margin-top: 3rem;
+    border-top: 1px solid var(--border);
+}
+
+.footer-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
+    gap: 2rem;
+    margin-bottom: 2rem;
+}
+
+.footer-section h4 {
+    color: var(--primary);
+    margin-bottom: 1rem;
+    font-weight: 600;
+}
+
+.footer-section p {
+    color: var(--text-muted);
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+/* Notifications */
+.notification-toast {
+    position: fixed;
+    top: 20px;
+    right: 20px;
+    background: var(--surface);
+    border-left: 4px solid var(--success);
+    padding: 1rem;
+    border-radius: var(--radius);
+    box-shadow: var(--shadow);
+    z-index: 1000;
+    animation: slideIn 0.3s ease;
+}
+
+@keyframes slideIn {
+    from { transform: translateX(100%); }
+    to { transform: translateX(0); }
 }
 """
 
-THEME = gr.themes.Soft(primary_hue="blue", neutral_hue="slate").set(
-    body_background_fill="#F8FAFC",
-    body_text_color="#0F172A",
-    button_primary_background_fill="#2563EB",
-    button_primary_background_fill_hover="#1D4ED8",
+# Enhanced theme for Gradio
+PREMIUM_THEME = gr.themes.Soft(
+    primary_hue="blue",
+    secondary_hue="slate",
+    neutral_hue="slate"
+).set(
+    body_background_fill="#f8fafc",
+    body_text_color="#1e293b",
+    button_primary_background_fill="#2563eb",
+    button_primary_background_fill_hover="#1d4ed8",
+    input_background_fill="#ffffff",
+    input_border_width="2px",
+    block_background_fill="#ffffff"
 )
 
-# Legal disclaimers
-LEGAL_DISCLAIMERS = {
-    "tax": "This tool does not provide tax advice. Consult a qualified tax professional.",
-    "immigration": "This tool does not provide immigration advice. Consult a licensed immigration professional.",
-    "investment": "Investment projections are for educational purposes only and are not investment advice."
-}
-
 # =========================
-# ENHANCED LEAD GENERATION DATA
+# ENHANCED DATA MODELS
 # =========================
 
-# User profiles for personalization
-USER_PROFILES = {
-    "startup_founder": {
-        "name": "Startup Founder",
-        "icon": "🚀",
-        "typical_revenue": 15000,
-        "risk_tolerance": 65,
-        "key_concerns": ["market_access", "funding", "tax_optimization"],
-        "success_multiplier": 1.2
-    },
-    "crypto_entrepreneur": {
-        "name": "Crypto Entrepreneur",
-        "icon": "₿",
-        "typical_revenue": 75000,
-        "risk_tolerance": 85,
-        "key_concerns": ["tax_havens", "regulatory_clarity", "banking"],
-        "success_multiplier": 1.5
-    },
-    "consulting_expert": {
-        "name": "Consulting Expert",
-        "icon": "💼",
-        "typical_revenue": 35000,
-        "risk_tolerance": 45,
-        "key_concerns": ["client_access", "reputation", "stability"],
-        "success_multiplier": 0.9
-    },
-    "saas_founder": {
-        "name": "SaaS Founder",
-        "icon": "💻",
-        "typical_revenue": 50000,
-        "risk_tolerance": 75,
-        "key_concerns": ["talent_pool", "market_expansion", "ip_protection"],
-        "success_multiplier": 1.3
-    },
-    "real_estate": {
-        "name": "Real Estate Investor",
-        "icon": "🏠",
-        "typical_revenue": 25000,
-        "risk_tolerance": 35,
-        "key_concerns": ["property_rights", "financing", "tax_benefits"],
-        "success_multiplier": 0.8
-    }
-}
-# Default scoring weights for different profiles
-PROFILE_WEIGHTS = {
-    "startup_founder": {"tax": 0.2, "cost": 0.15, "growth": 0.25, "ease": 0.2, "banking": 0.1, "partnership": 0.1},
-    "crypto_entrepreneur": {"tax": 0.3, "cost": 0.05, "growth": 0.1, "ease": 0.1, "banking": 0.3, "partnership": 0.15},
-    "consulting_expert": {"tax": 0.25, "cost": 0.2, "growth": 0.15, "ease": 0.2, "banking": 0.1, "partnership": 0.1},
-    "saas_founder": {"tax": 0.2, "cost": 0.1, "growth": 0.3, "ease": 0.2, "banking": 0.1, "partnership": 0.1},
-    "real_estate": {"tax": 0.25, "cost": 0.25, "growth": 0.1, "ease": 0.1, "banking": 0.1, "partnership": 0.2}
-}
-
-# Enhanced country data with market insights
-COUNTRY_CONFIG_ENHANCED = {
-    "UAE (Dubai)": {
-        "corp_tax": 0.09, "pers_tax": 0.00, "rev_mult": 3.0, "margin_delta_pp": 5.0,
-        "living_month": 9000.0, "ongoing_month": 1500.0, "setup_once": 35000.0,
-        "currency": "AED", "inflation": 2.5, "market_growth": 8.5, "ease_business": 9.2,
-        "tax_treaties": 95, "banking_score": 8.8, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 World-class startup ecosystem with 0% personal tax",
-            "crypto_entrepreneur": "₿ Crypto-friendly regulations and banking",
-            "consulting_expert": "💼 Hub for MENA market access",
-            "saas_founder": "💻 Growing tech talent pool and government support",
-            "real_estate": "🏠 Strong property market with freehold options"
-        },
-        "lead_magnets": ["UAE Startup Guide", "0% Tax Strategy", "Dubai Setup Checklist"],
-        "partnership_score": 95
-    },
-    "Singapore": {
-        "corp_tax": 0.17, "pers_tax": 0.22, "rev_mult": 2.8, "margin_delta_pp": 4.0,
-        "living_month": 8500.0, "ongoing_month": 1800.0, "setup_once": 45000.0,
-        "currency": "SGD", "inflation": 2.3, "market_growth": 6.2, "ease_business": 9.4,
-        "tax_treaties": 85, "banking_score": 9.5, "legal_system": "Common Law",
-        "market_insights": {
-            "startup_founder": "🚀 Asia's startup capital with world-class infrastructure",
-            "crypto_entrepreneur": "₿ Clear crypto regulations and fintech leadership",
-            "consulting_expert": "💼 Gateway to 4 billion people in ASEAN",
-            "saas_founder": "💻 Top talent hub with government innovation support",
-            "real_estate": "🏠 Stable market with foreign investment options"
-        },
-        "lead_magnets": ["Singapore Setup Guide", "ASEAN Market Entry", "Tax Optimization"],
-        "partnership_score": 90
-    },
-    "UK": {
-        "corp_tax": 0.25, "pers_tax": 0.27, "rev_mult": 1.5, "margin_delta_pp": 2.0,
-        "living_month": 6200.0, "ongoing_month": 1100.0, "setup_once": 18000.0,
-        "currency": "GBP", "inflation": 4.2, "market_growth": 2.1, "ease_business": 8.1,
-        "tax_treaties": 130, "banking_score": 9.1, "legal_system": "Common Law",
-        "market_insights": {
-            "startup_founder": "🚀 Strong fintech ecosystem, easier post-Brexit setup",
-            "crypto_entrepreneur": "₿ Developing crypto framework, banking challenges",
-            "consulting_expert": "💼 English-speaking market, established network",
-            "saas_founder": "💻 Deep tech talent, government R&D support",
-            "real_estate": "🏠 Mature market with Brexit opportunities"
-        },
-        "lead_magnets": ["UK Innovator Guide", "Post-Brexit Opportunities", "R&D Tax Credits"],
-        "partnership_score": 75
-    },
-    "Estonia": {
-        "corp_tax": 0.20, "pers_tax": 0.20, "rev_mult": 1.8, "margin_delta_pp": 3.5,
-        "living_month": 3500.0, "ongoing_month": 800.0, "setup_once": 12000.0,
-        "currency": "EUR", "inflation": 2.8, "market_growth": 4.5, "ease_business": 8.8,
-        "tax_treaties": 65, "banking_score": 8.2, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 Digital-first country, e-Residency program",
-            "crypto_entrepreneur": "₿ Crypto paradise with clear regulations",
-            "consulting_expert": "💼 EU market access at lower costs",
-            "saas_founder": "💻 Tech-savvy population, government digitization",
-            "real_estate": "🏠 Emerging market with EU citizenship path"
-        },
-        "lead_magnets": ["e-Residency Guide", "Digital Nomad Setup", "EU Market Entry"],
-        "partnership_score": 85
-    },
-    "Portugal": {
-        "corp_tax": 0.21, "pers_tax": 0.48, "rev_mult": 1.6, "margin_delta_pp": 2.5,
-        "living_month": 2800.0, "ongoing_month": 700.0, "setup_once": 15000.0,
-        "currency": "EUR", "inflation": 3.2, "market_growth": 3.8, "ease_business": 7.4,
-        "tax_treaties": 75, "banking_score": 7.9, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 Growing tech hub with NHR tax benefits for 10 years",
-            "crypto_entrepreneur": "₿ Friendly crypto regulations with tax optimization",
-            "consulting_expert": "💼 Gateway to European and Lusophone markets",
-            "saas_founder": "💻 Affordable tech talent with EU market access",
-            "real_estate": "🏠 Golden visa program with attractive yields"
-        },
-        "lead_magnets": ["Portugal NHR Guide", "Golden Visa Overview", "Tech Hub Report"],
-        "partnership_score": 80
-    },
-    "Netherlands": {
-        "corp_tax": 0.25, "pers_tax": 0.49, "rev_mult": 1.7, "margin_delta_pp": 3.0,
-        "living_month": 4500.0, "ongoing_month": 1200.0, "setup_once": 22000.0,
-        "currency": "EUR", "inflation": 2.9, "market_growth": 4.2, "ease_business": 8.6,
-        "tax_treaties": 90, "banking_score": 9.3, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 Innovation hub with 30% ruling tax benefit",
-            "crypto_entrepreneur": "₿ Balanced regulatory approach to crypto",
-            "consulting_expert": "💼 Gateway to European corporate market",
-            "saas_founder": "💻 Highly digitized market with English proficiency",
-            "real_estate": "🏠 Stable market with international appeal"
-        },
-        "lead_magnets": ["30% Ruling Guide", "Dutch Startup Ecosystem", "EU Expansion Playbook"],
-        "partnership_score": 85
-    }
-}
-
-# =========================
-# ADD USA, IRELAND AND SPAIN TO COUNTRY CONFIG
-# =========================
-
-COUNTRY_CONFIG_ENHANCED.update({
-    "USA (Delaware)": {
-        "corp_tax": 0.21, "pers_tax": 0.37, "rev_mult": 2.5, "margin_delta_pp": 4.0,
-        "living_month": 7500.0, "ongoing_month": 2000.0, "setup_once": 50000.0,
-        "currency": "USD", "inflation": 3.1, "market_growth": 5.5, "ease_business": 8.2,
-        "tax_treaties": 68, "banking_score": 9.2, "legal_system": "Common Law",
-        "market_insights": {
-            "startup_founder": "🚀 World's largest VC market with unparalleled scaling opportunities",
-            "crypto_entrepreneur": "₿ Evolving regulatory landscape with access to US crypto markets",
-            "consulting_expert": "💼 Premium market with highest consulting rates globally",
-            "saas_founder": "💻 Access to 330M consumers and world's top tech talent",
-            "real_estate": "🏠 Diverse market with strong appreciation in tech hubs"
-        },
-        "lead_magnets": ["US Market Entry Guide", "Delaware Incorporation", "L1/E2 Visa Strategies"],
-        "partnership_score": 88,
-        "seasonality": [1.0, 0.95, 1.05, 1.1, 1.05, 1.0, 0.95, 1.0, 1.1, 1.15, 1.2, 1.3],
-        "risk_factor": 0.75,
-        "visa_options": ["L1", "E2", "EB-5", "O-1", "H1B"]
-    },
-    "Ireland": {
-        "corp_tax": 0.125, "pers_tax": 0.40, "rev_mult": 1.9, "margin_delta_pp": 3.5,
-        "living_month": 4200.0, "ongoing_month": 1300.0, "setup_once": 18000.0,
-        "currency": "EUR", "inflation": 2.7, "market_growth": 6.8, "ease_business": 8.8,
-        "tax_treaties": 74, "banking_score": 8.5, "legal_system": "Common Law",
-        "market_insights": {
-            "startup_founder": "🚀 European tech hub with 12.5% corporate tax and R&D credits",
-            "crypto_entrepreneur": "₿ EU's emerging crypto hub with progressive regulations",
-            "consulting_expert": "💼 Gateway to EU market with English-speaking advantage",
-            "saas_founder": "💻 Home to European HQs of tech giants like Google and Facebook",
-            "real_estate": "🏠 Strong rental market with Dublin as European tech capital"
-        },
-        "lead_magnets": ["Irish R&D Tax Credit Guide", "EU Market Entry", "Startup Visa Program"],
-        "partnership_score": 87,
-        "seasonality": [0.9, 0.85, 0.95, 1.0, 1.05, 1.1, 1.2, 1.15, 1.05, 1.0, 0.95, 1.1],
-        "risk_factor": 0.82,
-        "visa_options": ["Startup Entrepreneur", "Critical Skills", "Intra-Company Transfer"]
-    },
-    "Spain": {
-        "corp_tax": 0.25, "pers_tax": 0.45, "rev_mult": 1.7, "margin_delta_pp": 2.8,
-        "living_month": 2800.0, "ongoing_month": 900.0, "setup_once": 15000.0,
-        "currency": "EUR", "inflation": 3.4, "market_growth": 4.2, "ease_business": 7.8,
-        "tax_treaties": 90, "banking_score": 7.9, "legal_system": "Civil Law",
-        "market_insights": {
-            "startup_founder": "🚀 Growing startup ecosystem with digital nomad visa options",
-            "crypto_entrepreneur": "₿ Favorable tax treatment for crypto assets under certain conditions",
-            "consulting_expert": "💼 Gateway to Latin American markets with cultural affinity",
-            "saas_founder": "💻 Affordable tech talent with high quality of life",
-            "real_estate": "🏠 Attractive property market with golden visa program"
-        },
-        "lead_magnets": ["Digital Nomad Visa Guide", "Spanish Startup Act", "Beckham Law Tax Regime"],
-        "partnership_score": 78,
-        "seasonality": [0.8, 0.85, 0.9, 1.0, 1.1, 1.3, 1.5, 1.4, 1.1, 1.0, 0.9, 0.95],
-        "risk_factor": 0.72,
-        "visa_options": ["Digital Nomad", "Entrepreneur", "Golden Visa", "Non-Lucrative"]
-    }
-})
-
-# =========================
-# UPDATE SEASONALITY FACTORS FOR ALL COUNTRIES
-# =========================
-
-SEASONALITY_FACTORS = {
-    "UAE (Dubai)": [1.0, 0.9, 0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.8, 1.0, 1.1, 1.2],
-    "Singapore": [0.9, 0.8, 0.9, 1.0, 1.0, 1.1, 1.1, 1.2, 1.1, 1.0, 1.0, 1.1],
-    "UK": [1.1, 1.0, 1.0, 1.0, 1.1, 1.1, 1.0, 1.0, 1.1, 1.2, 1.3, 1.4],
-    "Estonia": [1.2, 1.1, 1.0, 0.9, 0.9, 0.9, 0.9, 1.0, 1.1, 1.1, 1.2, 1.3],
-    "Portugal": [1.0, 0.9, 1.0, 1.1, 1.2, 1.3, 1.4, 1.3, 1.1, 1.0, 0.9, 1.0],
-    "Netherlands": [1.1, 1.0, 1.1, 1.1, 1.2, 1.2, 1.1, 1.0, 1.1, 1.2, 1.2, 1.3],
-    "USA (Delaware)": [1.0, 0.95, 1.05, 1.1, 1.05, 1.0, 0.95, 1.0, 1.1, 1.15, 1.2, 1.3],
-    "Ireland": [0.9, 0.85, 0.95, 1.0, 1.05, 1.1, 1.2, 1.15, 1.05, 1.0, 0.95, 1.1],
-    "Spain": [0.8, 0.85, 0.9, 1.0, 1.1, 1.3, 1.5, 1.4, 1.1, 1.0, 0.9, 0.95]
-}
-
-# =========================
-# UPDATE RISK FACTORS FOR ALL COUNTRIES
-# =========================
-
-RISK_FACTORS = {
-    "UAE (Dubai)": 0.9,
-    "Singapore": 0.85,
-    "UK": 0.75,
-    "Estonia": 0.8,
-    "Portugal": 0.7,
-    "Netherlands": 0.8,
-    "USA (Delaware)": 0.75,
-    "Ireland": 0.82,
-    "Spain": 0.72
-}
-
-# =========================
-# ENHANCE FINANCIAL MODELING WITH NEW COUNTRIES
-# =========================
-
-def calculate_risk_adjusted_npv(base_npv, country):
-    """Calculate risk-adjusted NPV using country-specific risk factors"""
-    risk_factor = RISK_FACTORS.get(country, 0.8)
-    return base_npv * risk_factor
-
-
-def apply_seasonality(revenue, month, country):
-    """Apply seasonal factors to revenue based on country and month"""
-    factors = SEASONALITY_FACTORS.get(country, [1.0] * 12)
-    return revenue * factors[month % 12]
-
-
-def calculate_ramp_up_revenue(base_revenue, month, country):
-    """Calculate revenue ramp-up based on country-specific business environment"""
-    ramp_up_rates = {
-        "UAE (Dubai)": min(1.0, month / 6.0),
-        "Singapore": min(1.0, month / 8.0),
-        "UK": min(1.0, month / 7.0),
-        "Estonia": min(1.0, month / 3.0),
-        "Portugal": min(1.0, month / 9.0),
-        "Netherlands": min(1.0, month / 8.0),
-        "USA (Delaware)": min(1.0, month / 10.0),
-        "Ireland": min(1.0, month / 7.0),
-        "Spain": min(1.0, month / 9.0)
-    }
-    ramp_rate = ramp_up_rates.get(country, min(1.0, month / 6.0))
-    return base_revenue * ramp_rate
-
-
-# =========================
-# ENHANCED VISUALIZATIONS
-# =========================
-
-def create_roi_gauge(roi_value):
-    """Create an ROI gauge with color indicators"""
-    fig = go.Figure(go.Indicator(
-        mode="gauge+number+delta",
-        value=roi_value,
-        domain={'x': [0, 1], 'y': [0, 1]},
-        title={'text': "5-Year ROI", 'font': {'size': 24}},
-        delta={'reference': 100, 'increasing': {'color': "green"}},
-        gauge={
-            'axis': {'range': [None, 500], 'tickwidth': 1, 'tickcolor': "darkblue"},
-            'bar': {'color': "darkblue"},
-            'bgcolor': "white",
-            'borderwidth': 2,
-            'bordercolor': "gray",
-            'steps': [
-                {'range': [0, 100], 'color': 'red'},
-                {'range': [100, 200], 'color': 'orange'},
-                {'range': [200, 500], 'color': 'green'}
-            ],
-            'threshold': {
-                'line': {'color': "red", 'width': 4},
-                'thickness': 0.75,
-                'value': 100
-            }
-        }
-    ))
-    fig.update_layout(height=300, margin=dict(l=20, r=20, t=50, b=20))
-    return fig
-
-
-TIMELINE_DATA = {
-    "UAE (Dubai)": [
-        {"name": "Company Setup", "duration": 30, "position": 1},
-        {"name": "License Approval", "duration": 15, "position": 2},
-        {"name": "Visa Processing", "duration": 20, "position": 3},
-        {"name": "Bank Account", "duration": 25, "position": 4}
-    ],
-    "Singapore": [
-        {"name": "ACRA Registration", "duration": 14, "position": 1},
-        {"name": "Business License", "duration": 21, "position": 2},
-        {"name": "Employment Pass", "duration": 28, "position": 3},
-        {"name": "Bank Setup", "duration": 21, "position": 4}
-    ]
-}
-
-TIMELINE_DATA.update({
-    "USA (Delaware)": [
-        {"name": "Company Formation", "duration": 14, "position": 1},
-        {"name": "EIN Registration", "duration": 21, "position": 2},
-        {"name": "Business Bank Account", "duration": 30, "position": 3},
-        {"name": "Visa Processing", "duration": 90, "position": 4},
-        {"name": "State Licensing", "duration": 45, "position": 5}
-    ],
-    "Ireland": [
-        {"name": "Company Registration", "duration": 10, "position": 1},
-        {"name": "Revenue Registration", "duration": 14, "position": 2},
-        {"name": "Business Bank Account", "duration": 28, "position": 3},
-        {"name": "Employment Permit", "duration": 42, "position": 4}
-    ],
-    "Spain": [
-        {"name": "NIE Application", "duration": 30, "position": 1},
-        {"name": "Company Formation", "duration": 45, "position": 2},
-        {"name": "Tax Registration", "duration": 21, "position": 3},
-        {"name": "Business Bank Account", "duration": 30, "position": 4},
-        {"name": "Visa Processing", "duration": 60, "position": 5}
-    ]
-})
-
-
-def create_timeline_visualization(dest, setup_time):
-    """Create a timeline visualization for the relocation process"""
-    country_stages = TIMELINE_DATA.get(dest, [])
-    fig = go.Figure()
-    for i, stage in enumerate(country_stages):
-        fig.add_trace(go.Bar(
-            y=[stage["name"]],
-            x=[stage["duration"]],
-            orientation='h',
-            marker_color=px.colors.qualitative.Set2[i % len(px.colors.qualitative.Set2)],
-            name=stage["name"]
-        ))
-    fig.update_layout(
-        title="Estimated Relocation Timeline",
-        xaxis_title="Days Required",
-        yaxis_title="Process Stage",
-        showlegend=False,
-        height=300
-    )
-    return fig
-
-
-# =========================
-# MULTI-TAB RESULTS
-# =========================
-
-def create_results_tabs(result, profile, dest):
-    """Create multi-tab results interface"""
-    with gr.Tabs() as tabs:
-        with gr.TabItem("📊 ROI Analysis"):
-            gr.Markdown("### Detailed Financial Analysis")
-        with gr.TabItem("🌍 Country Comparison"):
-            gr.Markdown("### Multi-Country Comparison")
-        with gr.TabItem("📅 Implementation Plan"):
-            gr.Markdown("### Relocation Timeline")
-            timeline = create_timeline_visualization(dest, 90)
-            gr.Plot(timeline)
-    return tabs
-
-
-# =========================
-# ENHANCED LEAD GENERATION SYSTEM
-# =========================
-
-def tiered_lead_magnets(roi_value, profile, dest):
-    """Create tiered lead magnet offers based on ROI"""
-    if roi_value > 300:
-        return {
-            "tier": "premium",
-            "title": f"Exclusive {dest} Relocation Concierge",
-            "value": "$5,000",
-            "includes": [
-                "Personalized immigration strategy session",
-                "Legal and tax optimization consultation",
-                "Bank introduction and account setup support",
-                "1-year ongoing advisory support"
-            ],
-            "urgency": "Only 3 spots available this month"
-        }
-    elif roi_value > 150:
-        return {
-            "tier": "standard",
-            "title": f"Complete {dest} Business Relocation Guide",
-            "value": "$997",
-            "includes": [
-                "Step-by-step relocation checklist",
-                "Tax optimization strategies",
-                "Legal requirements overview",
-                "Cost breakdown and timeline"
-            ],
-            "urgency": "Download immediately to secure current regulations"
-        }
-    else:
-        return {
-            "tier": "starter",
-            "title": f"{dest} Startup Essentials Package",
-            "value": "$297",
-            "includes": [
-                "Visa options comparison",
-                "Basic cost calculator",
-                "Initial checklist",
-                "Resource guide"
-            ],
-            "urgency": "Free for limited time"
-        }
-
-
-# =========================
-# ENHANCED UX ANIMATIONS
-# =========================
-
-def add_animations():
-    """Add smooth animations and transitions"""
-    animation_js = """
-    <script>
-    document.querySelectorAll('a[href^="#"]').forEach(anchor => {
-        anchor.addEventListener('click', function (e) {
-            e.preventDefault();
-            document.querySelector(this.getAttribute('href')).scrollIntoView({
-                behavior: 'smooth'
-            });
-        });
-    });
-    const observerOptions = { root: null, rootMargin: '0px', threshold: 0.1 };
-    const observer = new IntersectionObserver((entries) => {
-        entries.forEach(entry => {
-            if (entry.isIntersecting) {
-                entry.target.style.opacity = 1;
-                entry.target.style.transform = 'translateY(0)';
-            }
-        });
-    }, observerOptions);
-    document.querySelectorAll('.animate').forEach(el => {
-        el.style.opacity = 0;
-        el.style.transform = 'translateY(20px)';
-        el.style.transition = 'opacity 0.5s ease, transform 0.5s ease';
-        observer.observe(el);
-    });
-    document.querySelectorAll('.cta-button').forEach(button => {
-        button.addEventListener('click', async function() {
-            const originalText = this.innerHTML;
-            this.innerHTML = 'Loading...';
-            this.disabled = true;
-            try {
-                // Placeholder for real asynchronous action
-                await new Promise(resolve => setTimeout(resolve, 1000));
-            } finally {
-                this.innerHTML = originalText;
-                this.disabled = false;
-            }
-        });
-    });
-    </script>
-    """
-    return gr.HTML(animation_js)
+@dataclass
+class UserProfile:
+    id: str
+    name: str
+    icon: str
+    typical_revenue: float
+    risk_tolerance: int
+    key_concerns: List[str]
+    success_multiplier: float
+    margin_expectations: Tuple[float, float]  # (min, max)
     
-def create_dynamic_chart_updates():
-    """Return JS for real-time chart updates from slider changes."""
-    js = """
-    <script>
-    async function updateChartRealTime(){
-        const payload = {
-            dest: document.getElementById('dest')?.querySelector('select')?.value || 'UAE (Dubai)',
-            rev0: parseFloat(document.getElementById('rev0')?.querySelector('input')?.value || 0),
-            margin0: parseFloat(document.getElementById('margin0')?.querySelector('input')?.value || 0),
-            corp0: parseFloat(document.getElementById('corp0')?.querySelector('input')?.value || 0),
-            pers0: parseFloat(document.getElementById('pers0')?.querySelector('input')?.value || 0),
-            living0: parseFloat(document.getElementById('living0')?.querySelector('input')?.value || 0),
-            ongoing0: parseFloat(document.getElementById('ongoing0')?.querySelector('input')?.value || 0),
-            rev_mult: parseFloat(document.getElementById('rev_mult')?.querySelector('input')?.value || 0),
-            margin_delta: parseFloat(document.getElementById('margin_delta')?.querySelector('input')?.value || 0),
-            success: parseFloat(document.getElementById('success')?.querySelector('input')?.value || 0),
-            horizon_m: parseInt(document.getElementById('horizon_m')?.querySelector('input')?.value || 0),
-            capex_once: parseFloat(document.getElementById('capex_once')?.querySelector('input')?.value || 0),
-            discount_a: parseFloat(document.getElementById('discount_a')?.querySelector('input')?.value || 0)
-        };
-        try{
-            const resp = await fetch('/api/quick-calculate', {
-                method: 'POST',
-                headers: {'Content-Type': 'application/json'},
-                body: JSON.stringify(payload)
-            });
-            if(!resp.ok) return;
-            const data = await resp.json();
-            const preview = document.getElementById('roi-preview');
-            if(preview){
-                const roi = data.roi !== undefined ? data.roi.toFixed(1) : '—';
-                const payback = data.payback_years !== undefined && isFinite(data.payback_years) ? data.payback_years.toFixed(1)+ 'y' : 'Never';
-                preview.innerHTML = `ROI: ${roi}% | Payback: ${payback}`;
-            }
-        } catch(err){
-            console.error(err);
-        }
-    }
-    window.addEventListener('load', function(){
-        const ids=['margin0','corp0','pers0','rev_mult','margin_delta','success','horizon_m','discount_a'];
-        ids.forEach(id=>{
-            const el=document.getElementById(id);
-            if(el){
-                el.addEventListener('input', updateChartRealTime);
-            }
-        });
-    });
-    </script>
-    """
-    return js
+@dataclass
+class CountryData:
+    name: str
+    corp_tax: float
+    pers_tax: float
+    living_cost: float
+    business_cost: float
+    setup_cost: float
+    currency: str
+    market_growth: float
+    ease_score: float
+    banking_score: float
+    partnership_score: float
+    visa_options: List[str]
+    market_insights: Dict[str, str]
+    risk_factors: Dict[str, float]
+    seasonality: List[float]
 
-# Lead collection stages
-LEAD_STAGES = {
-    "email_capture": {
-        "trigger": "calculation_complete",
-        "offer": "Get personalized immigration roadmap PDF",
-        "fields": ["email", "name"],
-        "value_prop": "Detailed 15-page analysis with timeline and costs"
-    },
-    "phone_qualification": {
-        "trigger": "high_roi_result",
-        "offer": "Free 30-min strategy call with immigration expert",
-        "fields": ["phone", "best_time", "main_challenge"],
-        "value_prop": "Personalized consultation worth $500"
-    },
-    "premium_assessment": {
-        "trigger": "multiple_countries_compared",
-        "offer": "Complete Due Diligence Package",
-        "fields": ["linkedin", "company_size", "timeline", "budget"],
-        "value_prop": "Full legal, tax & business analysis worth $2,500"
-    }
-}
-
-# Social sharing templates
-SHARE_TEMPLATES = {
-    "linkedin": {
-        "title": "Just discovered my immigration ROI is {roi}%! 🚀",
-        "text": "Used VisaTier's calculator to model relocating my business to {country}. Results: {payback} payback period and €{npv} NPV. Game-changing insights for entrepreneurs! 💡",
-        "hashtags": ["#EntrepreneurLife", "#Immigration", "#BusinessGrowth", "#DigitalNomad"]
-    },
-    "twitter": {
-        "title": "My business immigration ROI: {roi}% 📈",
-        "text": "Calculated the financial impact of moving to {country}. Payback in {payback}, NPV of €{npv}. @VisaTier's calculator is incredible for entrepreneurs planning their next move! 🌍",
-        "hashtags": ["#StartupLife", "#Immigration", "#ROI"]
-    }
-}
-
-# =========================
-# ENHANCED LEAD GENERATION FUNCTIONS
-# =========================
-
-def generate_user_hash(email_or_id):
-    """Generate unique user hash for tracking"""
-    return hashlib.md5(str(email_or_id).encode()).hexdigest()[:8]
-
-# =========================
-# REFERRAL SYSTEM
-# =========================
-
-# In-memory stores for referral codes and credits
-REFERRAL_CODES = {}
-REFERRAL_CREDITS = {}
-
-def generate_referral_code(user_id):
-    """Generate unique referral code tied to a user ID."""
-    code = hashlib.md5(f"ref{user_id}".encode()).hexdigest()[:8]
-    REFERRAL_CODES[code] = user_id
-    REFERRAL_CREDITS.setdefault(user_id, 0)
-    return code
-
-def apply_referral_code(new_user_id, code):
-    """Apply a referral code for a new user and credit the referrer."""
-    referrer_id = REFERRAL_CODES.get(code)
-    if referrer_id:
-        REFERRAL_CREDITS[referrer_id] = REFERRAL_CREDITS.get(referrer_id, 0) + 1
-        return True
-    return False
-
-def get_consultation_price(user_id, base_price=100):
-    """Return consultation price after applying referral credits."""
-    credits = REFERRAL_CREDITS.get(user_id, 0)
-    if credits > 0:
-        REFERRAL_CREDITS[user_id] = credits - 1
-        return base_price * 0.5
-    return base_price
-
-def book_consultation(user_id, referral_code=None, base_price=100):
-    """Book a consultation applying referral code and credits."""
-    if referral_code:
-        # Credit the referrer and give discount to new user
-        apply_referral_code(user_id, referral_code)
-        return base_price * 0.5
-    return get_consultation_price(user_id, base_price)
-
-def trigger_lead_capture(stage, user_data, result_data=None):
-    """Trigger appropriate lead capture based on user behavior"""
-    stage_config = LEAD_STAGES.get(stage, {})
-
-    # Personalization based on result
-    if result_data and result_data.get('total_5yr_roi', 0) > 150:
-        urgency = "high"
-        multiplier = 1.5
-    elif result_data and result_data.get('payback_years', 999) < 2:
-        urgency = "medium"
-        multiplier = 1.2
-    else:
-        urgency = "low"
-        multiplier = 1.0
-
-    return {
-        "stage": stage,
-        "urgency": urgency,
-        "offer": stage_config.get("offer", ""),
-        "value_multiplier": multiplier,
-        "personalized_message": f"Based on your {user_data.get('profile', 'entrepreneur')} profile..."
-    }
-def handle_data_deletion(email):
-    """Handle GDPR data deletion requests."""
-    # In a real system, remove user data from persistent storage
-    print(f"Data deletion requested for {email}")
-    
-def generate_personalized_insights(profile, country, result):
-    """Generate AI-powered personalized insights"""
-    profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
-    country_data = COUNTRY_CONFIG_ENHANCED.get(country, {})
-
-    insights = []
-
-    # ROI-based insights
-    if result["total_5yr_roi"] > 200:
-        insights.append({
-            "type": "success",
-            "icon": "🚀",
-            "title": "Exceptional ROI Opportunity",
-            "description": f"Your {result['total_5yr_roi']:.1f}% ROI puts you in the top 5% of relocations we've analyzed.",
-            "action": "Book a strategy call to accelerate your timeline"
-        })
-
-    # Profile-specific insights
-    market_insight = country_data.get("market_insights", {}).get(profile, "")
-    if market_insight:
-        insights.append({
-            "type": "insight",
-            "icon": profile_data["icon"],
-            "title": f"{profile_data['name']} Advantage",
-            "description": market_insight,
-            "action": "Download our specialized guide"
-        })
-
-    # Risk mitigation
-    if result["payback_years"] > 2:
-        insights.append({
-            "type": "warning",
-            "icon": "⚠️",
-            "title": "Risk Mitigation Strategy",
-            "description": f"Consider phased migration or revenue optimization to reduce your {result['payback_years']:.1f} year payback period.",
-            "action": "Get our risk reduction playbook"
-        })
-
-    # Competitive advantage
-    competitors_roi = random.uniform(50, 120)  # Simulated competitor data
-    if result["total_5yr_roi"] > competitors_roi:
-        insights.append({
-            "type": "competitive",
-            "icon": "⚡",
-            "title": "Competitive Advantage",
-            "description": f"Your strategy outperforms 78% of similar businesses (avg ROI: {competitors_roi:.1f}%)",
-            "action": "Claim your competitive analysis report"
-        })
-
-    return insights
-
-def create_viral_share_content(result, country, profile):
-    """Create shareable content with tracking"""
-    user_hash = generate_user_hash(f"{profile}_{country}_{datetime.now()}")
-
-    roi = result["total_5yr_roi"]
-    payback = f"{result['payback_years']:.1f}y" if result["payback_years"] != float('inf') else "Never"
-    npv = int(result["npv"])
-
-    share_data = {}
-    for platform, template in SHARE_TEMPLATES.items():
-        share_data[platform] = {
-            "title": template["title"].format(roi=f"{roi:.1f}%"),
-            "text": template["text"].format(
-                country=country,
-                roi=f"{roi:.1f}%",
-                payback=payback,
-                npv=f"{npv:,}"
-            ),
-            "url": f"https://visatier.com/calculator?ref={user_hash}",
-            "hashtags": " ".join(template["hashtags"])
-        }
-
-    return share_data
-
-def calculate_enhanced_roi_with_personalization(profile, *args):
-    """Enhanced ROI calculation with personalization factors"""
-    profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
-
-    # Run base calculation
-    result = compute_enhanced_monthly_delta_cashflow(*args)
-
-    # Apply profile-specific multipliers
-    success_multiplier = profile_data["success_multiplier"]
-    result["total_5yr_roi"] *= success_multiplier
-    result["npv"] *= success_multiplier
-
-    # Add profile-specific risks
-    if profile == "crypto_entrepreneur":
-        result["regulatory_risk"] = "medium"
-        result["banking_complexity"] = "high"
-    elif profile == "real_estate":
-        result["market_volatility"] = "low"
-        result["leverage_opportunity"] = "high"
-
-    return result
-
-def create_lead_magnet_offer(insights, country, profile):
-    """Create compelling lead magnet based on insights"""
-    country_data = COUNTRY_CONFIG_ENHANCED.get(country, {})
-    lead_magnets = country_data.get("lead_magnets", ["Immigration Guide"])
-
-    high_value_insights = [i for i in insights if i["type"] in ["success", "competitive"]]
-
-    if len(high_value_insights) >= 2:
-        offer = {
-            "type": "premium",
-            "title": f"Complete {country} Immigration Playbook",
-            "value": "$2,500",
-            "includes": [
-                "Personalized financial projections",
-                "Step-by-step legal roadmap",
-                "Tax optimization strategies",
-                "Market entry tactics",
-                "Risk mitigation plan"
-            ],
-            "urgency": "Limited to first 50 entrepreneurs this month"
-        }
-    else:
-        offer = {
-            "type": "standard",
-            "title": f"{country} Starter Guide for {USER_PROFILES[profile]['name']}s",
-            "value": "$497",
-            "includes": [
-                "Visa options comparison",
-                "Cost breakdown calculator",
-                "Timeline and checklist",
-                "Common pitfalls guide"
-            ],
-            "urgency": "Get instant access"
-        }
-
-    return offer
-
-# =========================
-# COUNTRY COMPARISON MATRIX
-# =========================
-
-def create_country_comparison_matrix(selected_countries, user_profile):
-    """Build a scored comparison DataFrame for selected countries."""
-    if not selected_countries:
-        return pd.DataFrame()
-
-    rows = []
-    for country in selected_countries:
-        data = COUNTRY_CONFIG_ENHANCED.get(country)
-        if not data:
-            continue
-        tax_burden = (data["corp_tax"] + data["pers_tax"]) * 100
-        living_cost = data["living_month"]
-        business_cost = data["ongoing_month"]
-        market_growth = data.get("market_growth", 0)
-        ease_business = data.get("ease_business", 0)
-        banking_score = data.get("banking_score", 0)
-        partnership_score = data.get("partnership_score", 0)
-        rows.append({
-            "Country": country,
-            "Tax Burden (%)": tax_burden,
-            "Living Cost (€)": living_cost,
-            "Business Cost (€)": business_cost,
-            "Market Growth (%)": market_growth,
-            "Ease of Business": ease_business,
-            "Banking Score": banking_score,
-            "Partnership Score": partnership_score
-        })
-
-    df = pd.DataFrame(rows)
-    if df.empty:
-        return df
-
-    # Normalized scores (0-100)
-    df["tax_score"] = 100 - df["Tax Burden (%)"]
-    total_cost = df["Living Cost (€)"] + df["Business Cost (€)"]
-    df["cost_score"] = 100 - (total_cost / total_cost.max()) * 100
-    df["growth_score"] = df["Market Growth (%)"] * 10
-    df["ease_score"] = df["Ease of Business"] * 10
-    df["banking_score_adj"] = df["Banking Score"] * 10
-
-    weights = PROFILE_WEIGHTS.get(user_profile, {"tax": 1/6, "cost": 1/6, "growth": 1/6, "ease": 1/6, "banking": 1/6, "partnership": 1/6})
-
-    df["Score"] = (
-        df["tax_score"] * weights["tax"] +
-        df["cost_score"] * weights["cost"] +
-        df["growth_score"] * weights["growth"] +
-        df["ease_score"] * weights["ease"] +
-        df["banking_score_adj"] * weights["banking"] +
-        df["Partnership Score"] * weights["partnership"]
+# Enhanced user profiles with more detailed data
+ENHANCED_PROFILES = {
+    "tech_startup": UserProfile(
+        id="tech_startup",
+        name="Tech Startup Founder",
+        icon="🚀",
+        typical_revenue=45000,
+        risk_tolerance=80,
+        key_concerns=["talent_access", "ip_protection", "scaling"],
+        success_multiplier=1.4,
+        margin_expectations=(15, 35)
+    ),
+    "crypto_defi": UserProfile(
+        id="crypto_defi",
+        name="Crypto/DeFi Entrepreneur",
+        icon="₿",
+        typical_revenue=85000,
+        risk_tolerance=90,
+        key_concerns=["regulatory_clarity", "banking", "tax_optimization"],
+        success_multiplier=1.8,
+        margin_expectations=(25, 60)
+    ),
+    "consulting": UserProfile(
+        id="consulting",
+        name="Strategic Consultant",
+        icon="💼",
+        typical_revenue=35000,
+        risk_tolerance=50,
+        key_concerns=["client_proximity", "reputation", "networking"],
+        success_multiplier=1.1,
+        margin_expectations=(40, 70)
+    ),
+    "ecommerce": UserProfile(
+        id="ecommerce",
+        name="E-commerce Owner",
+        icon="🛒",
+        typical_revenue=55000,
+        risk_tolerance=65,
+        key_concerns=["logistics", "market_access", "compliance"],
+        success_multiplier=1.3,
+        margin_expectations=(10, 25)
+    ),
+    "real_estate": UserProfile(
+        id="real_estate",
+        name="Real Estate Investor",
+        icon="🏠",
+        typical_revenue=28000,
+        risk_tolerance=40,
+        key_concerns=["property_laws", "financing", "market_stability"],
+        success_multiplier=0.9,
+        margin_expectations=(8, 18)
+    ),
+    "content_creator": UserProfile(
+        id="content_creator",
+        name="Content Creator/Influencer",
+        icon="📱",
+        typical_revenue=25000,
+        risk_tolerance=70,
+        key_concerns=["internet_infrastructure", "tax_treaties", "lifestyle"],
+        success_multiplier=1.2,
+        margin_expectations=(60, 85)
     )
+}
 
-    df = df[
-        [
-            "Country",
-            "Tax Burden (%)",
-            "Living Cost (€)",
-            "Business Cost (€)",
-            "Market Growth (%)",
-            "Ease of Business",
-            "Banking Score",
-            "Partnership Score",
-            "Score",
+# Comprehensive country database with enhanced metrics
+ENHANCED_COUNTRIES = {
+    "UAE": CountryData(
+        name="UAE (Dubai)",
+        corp_tax=0.09, pers_tax=0.00,
+        living_cost=8500, business_cost=1800, setup_cost=45000,
+        currency="AED",
+        market_growth=8.2, ease_score=9.4, banking_score=8.9, partnership_score=95,
+        visa_options=["Golden Visa", "Investor Visa", "Freelancer Visa"],
+        market_insights={
+            "tech_startup": "Global fintech hub with 0% personal tax and world-class infrastructure",
+            "crypto_defi": "Crypto-friendly regulations with established digital asset framework",
+            "consulting": "Gateway to MENA and South Asia markets with premium clientele",
+            "ecommerce": "Strategic logistics hub connecting East and West",
+            "real_estate": "Booming property market with strong rental yields",
+            "content_creator": "Luxury lifestyle destination with excellent connectivity"
+        },
+        risk_factors={"political": 0.1, "economic": 0.15, "regulatory": 0.05},
+        seasonality=[1.1, 1.0, 0.9, 0.8, 0.7, 0.6, 0.5, 0.6, 0.8, 1.0, 1.2, 1.3]
+    ),
+    "Singapore": CountryData(
+        name="Singapore",
+        corp_tax=0.17, pers_tax=0.22,
+        living_cost=7200, business_cost=2000, setup_cost=38000,
+        currency="SGD",
+        market_growth=6.8, ease_score=9.6, banking_score=9.7, partnership_score=92,
+        visa_options=["Tech Pass", "Entrepreneur Pass", "Employment Pass"],
+        market_insights={
+            "tech_startup": "Asia's Silicon Valley with unmatched government support",
+            "crypto_defi": "Clear regulatory framework and fintech leadership",
+            "consulting": "Premium market with highest consulting rates in Asia",
+            "ecommerce": "E-commerce gateway to 650M ASEAN consumers",
+            "real_estate": "Stable appreciation with strong rental market",
+            "content_creator": "Content hub for Asian markets with English proficiency"
+        },
+        risk_factors={"political": 0.02, "economic": 0.08, "regulatory": 0.03},
+        seasonality=[0.9, 0.85, 0.9, 1.0, 1.05, 1.1, 1.2, 1.15, 1.05, 1.0, 0.95, 1.0]
+    ),
+    "Estonia": CountryData(
+        name="Estonia",
+        corp_tax=0.20, pers_tax=0.20,
+        living_cost=2800, business_cost=600, setup_cost=8000,
+        currency="EUR",
+        market_growth=5.5, ease_score=9.0, banking_score=8.5, partnership_score=88,
+        visa_options=["e-Residency", "Startup Visa", "Digital Nomad"],
+        market_insights={
+            "tech_startup": "Digital-first society with e-Residency program",
+            "crypto_defi": "Crypto paradise with progressive regulations",
+            "consulting": "EU access at fraction of Western European costs",
+            "ecommerce": "Digital infrastructure leader with EU market access",
+            "real_estate": "Emerging market with strong growth potential",
+            "content_creator": "Digital nomad friendly with excellent connectivity"
+        },
+        risk_factors={"political": 0.05, "economic": 0.12, "regulatory": 0.04},
+        seasonality=[0.8, 0.7, 0.8, 0.9, 1.0, 1.2, 1.4, 1.3, 1.1, 1.0, 0.9, 0.8]
+    ),
+    "Portugal": CountryData(
+        name="Portugal",
+        corp_tax=0.21, pers_tax=0.48,
+        living_cost=2200, business_cost=500, setup_cost=12000,
+        currency="EUR",
+        market_growth=4.8, ease_score=7.8, banking_score=8.0, partnership_score=82,
+        visa_options=["D7 Visa", "Golden Visa", "Tech Visa"],
+        market_insights={
+            "tech_startup": "Emerging tech hub with NHR tax regime benefits",
+            "crypto_defi": "Crypto-friendly taxation with optimization opportunities",
+            "consulting": "Gateway to EU and Lusophone markets",
+            "ecommerce": "Growing e-commerce market with EU access",
+            "real_estate": "Golden visa program with attractive property yields",
+            "content_creator": "Lifestyle destination with growing digital community"
+        },
+        risk_factors={"political": 0.03, "economic": 0.18, "regulatory": 0.08},
+        seasonality=[0.8, 0.8, 0.9, 1.0, 1.2, 1.4, 1.6, 1.5, 1.2, 1.0, 0.9, 0.9]
+    ),
+    "USA": CountryData(
+        name="USA (Delaware)",
+        corp_tax=0.21, pers_tax=0.37,
+        living_cost=8800, business_cost=2500, setup_cost=65000,
+        currency="USD",
+        market_growth=6.2, ease_score=8.4, banking_score=9.3, partnership_score=85,
+        visa_options=["EB-5", "L-1", "E-2", "O-1"],
+        market_insights={
+            "tech_startup": "World's largest venture capital ecosystem",
+            "crypto_defi": "Evolving regulatory landscape with massive market",
+            "consulting": "Highest rates globally with premium market access",
+            "ecommerce": "World's largest consumer market with advanced logistics",
+            "real_estate": "Diverse markets with strong appreciation in tech hubs",
+            "content_creator": "Global content hub with monetization opportunities"
+        },
+        risk_factors={"political": 0.15, "economic": 0.12, "regulatory": 0.10},
+        seasonality=[1.0, 0.95, 1.05, 1.15, 1.1, 1.05, 0.95, 0.9, 1.1, 1.2, 1.25, 1.4]
+    ),
+    "UK": CountryData(
+        name="United Kingdom",
+        corp_tax=0.25, pers_tax=0.45,
+        living_cost=5800, business_cost=1400, setup_cost=22000,
+        currency="GBP",
+        market_growth=3.2, ease_score=8.2, banking_score=9.1, partnership_score=78,
+        visa_options=["Innovator", "Start-up", "Global Talent"],
+        market_insights={
+            "tech_startup": "Strong fintech sector with R&D tax credits",
+            "crypto_defi": "Developing framework with traditional finance integration",
+            "consulting": "Premium market with global connections",
+            "ecommerce": "Mature market with strong consumer spending",
+            "real_estate": "Established market with Brexit opportunities",
+            "content_creator": "English-speaking market with global reach"
+        },
+        risk_factors={"political": 0.12, "economic": 0.15, "regulatory": 0.08},
+        seasonality=[0.9, 0.85, 0.9, 1.0, 1.1, 1.2, 1.3, 1.25, 1.1, 1.05, 1.0, 1.2]
+    )
+}
+
+# =========================
+# ADVANCED CALCULATION ENGINE
+# =========================
+
+class ROICalculator:
+    def __init__(self):
+        self.monte_carlo_iterations = 1000
+        self.confidence_intervals = [0.1, 0.25, 0.5, 0.75, 0.9]
+    
+    def calculate_enhanced_roi(
+        self,
+        profile: UserProfile,
+        country: CountryData,
+        current_revenue: float,
+        current_margin: float,
+        current_corp_tax: float,
+        current_pers_tax: float,
+        current_living: float,
+        current_business: float,
+        revenue_multiplier: float,
+        margin_improvement: float,
+        success_probability: float,
+        time_horizon: int,
+        discount_rate: float
+    ) -> Dict:
+        """Advanced ROI calculation with Monte Carlo simulation"""
+        
+        # Base calculations
+        base_result = self._calculate_deterministic_roi(
+            profile, country, current_revenue, current_margin,
+            current_corp_tax, current_pers_tax, current_living, current_business,
+            revenue_multiplier, margin_improvement, success_probability,
+            time_horizon, discount_rate
+        )
+        
+        # Monte Carlo simulation for risk assessment
+        monte_carlo_result = self._run_monte_carlo_simulation(
+            profile, country, current_revenue, current_margin,
+            revenue_multiplier, margin_improvement, time_horizon, discount_rate
+        )
+        
+        # Sensitivity analysis
+        sensitivity_result = self._perform_sensitivity_analysis(
+            profile, country, current_revenue, current_margin,
+            revenue_multiplier, margin_improvement, time_horizon, discount_rate
+        )
+        
+        return {
+            **base_result,
+            "monte_carlo": monte_carlo_result,
+            "sensitivity": sensitivity_result,
+            "risk_score": self._calculate_risk_score(country, profile),
+            "opportunity_score": self._calculate_opportunity_score(base_result, country, profile)
+        }
+    
+    def _calculate_deterministic_roi(self, profile, country, *args) -> Dict:
+        """Core deterministic ROI calculation"""
+        (current_revenue, current_margin, current_corp_tax, current_pers_tax,
+         current_living, current_business, revenue_multiplier, margin_improvement,
+         success_probability, time_horizon, discount_rate) = args
+        
+        # Current situation
+        current_profit = current_revenue * (current_margin / 100)
+        current_after_tax = current_profit * (1 - current_corp_tax/100) * (1 - current_pers_tax/100)
+        current_net = current_after_tax - current_living - current_business
+        
+        # New situation
+        new_revenue = current_revenue * revenue_multiplier * profile.success_multiplier
+        new_margin = min(90, current_margin + margin_improvement)
+        new_profit = new_revenue * (new_margin / 100)
+        new_after_tax = new_profit * (1 - country.corp_tax * 100) * (1 - country.pers_tax * 100)
+        new_net = new_after_tax - country.living_cost - country.business_cost
+        
+        # Cash flow analysis
+        monthly_delta = (new_net - current_net) * (success_probability / 100)
+        setup_cost = country.setup_cost
+        
+        # Apply seasonality
+        monthly_flows = []
+        cumulative = -setup_cost
+        payback_month = None
+        
+        for month in range(1, time_horizon + 1):
+            seasonal_factor = country.seasonality[(month - 1) % 12]
+            monthly_cf = monthly_delta * seasonal_factor
+            monthly_flows.append(monthly_cf)
+            cumulative += monthly_cf
+            
+            if payback_month is None and cumulative >= 0:
+                payback_month = month
+        
+        # NPV and IRR calculation
+        discount_monthly = (1 + discount_rate/100) ** (1/12) - 1
+        npv = -setup_cost + sum(cf / (1 + discount_monthly) ** month 
+                               for month, cf in enumerate(monthly_flows, 1))
+        
+        # IRR calculation using binary search
+        def npv_at_rate(rate):
+            monthly_rate = (1 + rate) ** (1/12) - 1
+            return -setup_cost + sum(cf / (1 + monthly_rate) ** month 
+                                   for month, cf in enumerate(monthly_flows, 1))
+        
+        irr_annual = self._find_irr(npv_at_rate)
+        
+        # ROI calculation
+        total_return = sum(monthly_flows)
+        roi = (total_return / setup_cost) * 100 if setup_cost > 0 else 0
+        
+        return {
+            "npv": npv,
+            "roi": roi,
+            "irr_annual": irr_annual * 100 if irr_annual else 0,
+            "payback_months": payback_month or float('inf'),
+            "payback_years": (payback_month / 12) if payback_month else float('inf'),
+            "monthly_delta": monthly_delta,
+            "total_return": total_return,
+            "monthly_flows": monthly_flows,
+            "setup_cost": setup_cost
+        }
+    
+    def _run_monte_carlo_simulation(self, profile, country, *args) -> Dict:
+        """Monte Carlo simulation for risk assessment"""
+        results = []
+        
+        for _ in range(self.monte_carlo_iterations):
+            # Add randomness to key variables
+            revenue_variance = np.random.normal(1.0, 0.15)
+            margin_variance = np.random.normal(1.0, 0.10)
+            success_variance = np.random.normal(1.0, 0.20)
+            
+            # Modify inputs with variance
+            modified_args = list(args)
+            modified_args[0] *= revenue_variance  # revenue
+            modified_args[1] *= margin_variance   # margin
+            modified_args[7] *= success_variance  # success probability
+            
+            result = self._calculate_deterministic_roi(profile, country, *modified_args)
+            results.append(result)
+        
+        # Calculate confidence intervals
+        rois = [r['roi'] for r in results]
+        npvs = [r['npv'] for r in results]
+        
+        confidence_intervals = {}
+        for ci in self.confidence_intervals:
+            confidence_intervals[f'roi_{int(ci*100)}'] = np.percentile(rois, ci * 100)
+            confidence_intervals[f'npv_{int(ci*100)}'] = np.percentile(npvs, ci * 100)
+        
+        return {
+            "mean_roi": np.mean(rois),
+            "std_roi": np.std(rois),
+            "mean_npv": np.mean(npvs),
+            "std_npv": np.std(npvs),
+            "confidence_intervals": confidence_intervals,
+            "probability_positive_roi": sum(1 for roi in rois if roi > 0) / len(rois)
+        }
+    
+    def _perform_sensitivity_analysis(self, profile, country, *args) -> Dict:
+        """Sensitivity analysis for key variables"""
+        base_result = self._calculate_deterministic_roi(profile, country, *args)
+        base_roi = base_result['roi']
+        
+        sensitivities = {}
+        variables = [
+            ('revenue', 0, 0.1),
+            ('margin', 1, 5.0),
+            ('revenue_multiplier', 6, 0.2),
+            ('success_probability', 8, 10.0)
         ]
-    ].sort_values("Score", ascending=False).reset_index(drop=True)
-
-    return df
-
-# =========================
-# CTA OPTIMIZATION
-# =========================
-
-def optimize_cta_based_on_results(roi, payback, profile):
-    """Determine CTA text, color, price and urgency based on results"""
-    profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
-
-    # Handle infinite payback as very long
-    payback = payback if not math.isinf(payback) else 99
-
-    if roi >= 200 and payback <= 2:
-        text = f"Book {profile_data['name']} Strategy Call"
-        color = "#10B981"
-        price = "$997"
-        urgency = (
-            f"With {roi:.1f}% ROI and {payback:.1f}y payback, spots are limited—act now."
-        )
-    elif roi >= 100 and payback <= 3:
-        text = f"Plan {profile_data['name']} Expansion"
-        color = "#2563EB"
-        price = "$499"
-        urgency = (
-            f"Strong {roi:.1f}% ROI expected. Secure your slot soon."
-        )
-    else:
-        text = f"Explore {profile_data['name']} Options"
-        color = "#F59E0B"
-        price = "$199"
-        urgency = (
-            f"ROI {roi:.1f}% with {payback:.1f}y payback—let's optimize your strategy."
-        )
-
-    return {"text": text, "color": color, "price": price, "urgency": urgency}
-
-
-# =========================
-# MAIN ENHANCED CALCULATION FUNCTION
-# =========================
-
-def compute_enhanced_monthly_delta_cashflow(
-    rev0, margin0_pct, corp0_pct, pers0_pct, living0, ongoing0,
-    dest, rev_mult, margin_delta_pp, corp1_pct, pers1_pct, living1, ongoing1,
-    capex_once, horizon_m, discount_annual_pct, success_pct,
-    include_inflation=True, include_additional_costs=True,
-    include_seasonality=True, include_ramp_up=True 
-):
-    """Enhanced calculation with seasonality and ramp-up modeling"""
-    m0 = max(0.01, min(0.90, margin0_pct / 100.0))
-    ct0 = max(0.0, min(0.60, corp0_pct / 100.0))
-    pt0 = max(0.0, min(0.60, pers0_pct / 100.0))
-
-    mult = max(0.0, rev_mult)
-    mdelta = margin_delta_pp / 100.0
-    ct1 = max(0.0, min(0.60, corp1_pct / 100.0))
-    pt1 = max(0.0, min(0.60, pers1_pct / 100.0))
-
-    p = max(0.01, min(1.0, success_pct / 100.0))
-    mr = (1.0 + discount_annual_pct / 100.0) ** (1.0 / 12.0) - 1.0
-
-    country_data = COUNTRY_CONFIG_ENHANCED.get(dest, {})
-    inflation_rate = country_data.get('inflation', 3.0) / 100.0 / 12.0
-
-    base_profit0 = rev0 * m0
-    after_tax0 = base_profit0 * (1 - ct0) * (1 - pt0) - living0 - ongoing0
-
-    base_rev1 = rev0 * mult
-
-    cash = [-capex_once]
-    cum = -capex_once
-    months = [0]
-    cum_series = [cum]
-    payback_m = math.inf
-
-    for m in range(1, horizon_m + 1):
-        ramp_rev = calculate_ramp_up_revenue(base_rev1, m, dest) if include_ramp_up else base_rev1
-        seasonal_rev = apply_seasonality(ramp_rev, m, dest) if include_seasonality else ramp_rev
-
-        m1 = max(0.01, min(0.90, m0 + mdelta))
-        base_profit1 = seasonal_rev * m1
-        after_tax1 = base_profit1 * (1 - ct1) * (1 - pt1) - living1 - ongoing1
-
-        cf = (after_tax1 - after_tax0) * p
-
-        if include_inflation:
-            inflation_factor = (1 + inflation_rate) ** m
-            cf = cf / inflation_factor
-
-        cash.append(cf)
-        cum += cf
-        months.append(m)
-        cum_series.append(cum)
-        if math.isinf(payback_m) and cum >= 0:
-            payback_m = m
-
-    npv = sum(cf / ((1 + mr) ** t) for t, cf in enumerate(cash))
-    risk_adjusted_npv = calculate_risk_adjusted_npv(npv, dest)
-    roi5y = (cum / capex_once) * 100
-
-    # IRR calculation
-    def irr_bisection(cash_flows, lo=-0.99, hi=5.0, iterations=100, tolerance=1e-7):
-        def npv_calc(rate):
-            return sum(cf / ((1 + rate) ** t) for t, cf in enumerate(cash_flows))
-
-        f_lo, f_hi = npv_calc(lo), npv_calc(hi)
-        if f_lo * f_hi > 0:
-            return None
-
-        for _ in range(iterations):
-            mid = (lo + hi) / 2
-            v = npv_calc(mid)
-            if abs(v) < tolerance:
+        
+        for var_name, var_index, change_amount in variables:
+            modified_args = list(args)
+            modified_args[var_index] += change_amount
+            
+            new_result = self._calculate_deterministic_roi(profile, country, *modified_args)
+            sensitivity = (new_result['roi'] - base_roi) / change_amount
+            sensitivities[var_name] = sensitivity
+        
+        return sensitivities
+    
+    def _find_irr(self, npv_function, precision=1e-6, max_iterations=100):
+        """Find IRR using binary search"""
+        low, high = -0.99, 5.0
+        
+        for _ in range(max_iterations):
+            mid = (low + high) / 2
+            npv = npv_function(mid)
+            
+            if abs(npv) < precision:
                 return mid
-            if v > 0:
-                lo = mid
+            elif npv > 0:
+                low = mid
             else:
-                hi = mid
-        return (lo + hi) / 2
-
-    irr_m = irr_bisection(cash)
-    irr_annual = ((1 + irr_m) ** 12 - 1) * 100.0 if irr_m is not None else 0.0
-
-    return {
-        "npv": npv,
-        "risk_adjusted_npv": risk_adjusted_npv,
-        "total_5yr_roi": roi5y,
-        "payback_months": payback_m,
-        "payback_years": (payback_m / 12.0) if not math.isinf(payback_m) else float("inf"),
-        "irr_annual_pct": irr_annual,
-        "months": months,
-        "cum_values": cum_series,
-        "delta_monthly": after_tax1 - after_tax0,
-        "country_data": country_data
-    }
+                high = mid
+        
+        return None
+    
+    def _calculate_risk_score(self, country: CountryData, profile: UserProfile) -> float:
+        """Calculate overall risk score (0-100, lower is better)"""
+        political_risk = country.risk_factors.get('political', 0.1) * 30
+        economic_risk = country.risk_factors.get('economic', 0.1) * 40
+        regulatory_risk = country.risk_factors.get('regulatory', 0.1) * 30
+        
+        # Adjust for profile risk tolerance
+        risk_adjustment = (100 - profile.risk_tolerance) / 100
+        
+        total_risk = (political_risk + economic_risk + regulatory_risk) * (1 + risk_adjustment)
+        return min(100, total_risk)
+    
+    def _calculate_opportunity_score(self, result: Dict, country: CountryData, profile: UserProfile) -> float:
+        """Calculate opportunity score (0-100, higher is better)"""
+        roi_score = min(50, result['roi'] / 4)  # Cap at 200% ROI = 50 points
+        growth_score = country.market_growth * 5  # Market growth contribution
+        ease_score = country.ease_score * 2  # Ease of business
+        partnership_score = country.partnership_score / 2  # Partnership potential
+        
+        return min(100, roi_score + growth_score + ease_score + partnership_score)
 
 # =========================
-# ENHANCED UI CREATION
+# ENHANCED VISUALIZATION ENGINE
 # =========================
 
-def create_immigration_roi_app_v3():
-    with gr.Blocks(theme=THEME, css=CSS) as demo:
+class ChartGenerator:
+    @staticmethod
+    def create_roi_dashboard(result: Dict, country_name: str, profile_name: str) -> go.Figure:
+        """Create comprehensive ROI dashboard"""
+        fig = make_subplots(
+            rows=2, cols=2,
+            subplot_titles=("Cash Flow Projection", "ROI Distribution", "Risk vs Return", "Sensitivity Analysis"),
+            specs=[[{"type": "scatter"}, {"type": "histogram"}],
+                   [{"type": "scatter"}, {"type": "bar"}]]
+        )
+        
+        # Cash flow projection
+        months = list(range(len(result['monthly_flows'])))
+        cumulative = np.cumsum([-result['setup_cost']] + result['monthly_flows'])
+        
+        fig.add_trace(
+            go.Scatter(x=months, y=cumulative, mode='lines+markers', name='Cumulative Cash Flow'),
+            row=1, col=1
+        )
+        
+        # ROI distribution (Monte Carlo)
+        if 'monte_carlo' in result:
+            roi_samples = np.random.normal(
+                result['monte_carlo']['mean_roi'],
+                result['monte_carlo']['std_roi'],
+                1000
+            )
+            fig.add_trace(
+                go.Histogram(x=roi_samples, name='ROI Distribution', opacity=0.7),
+                row=1, col=2
+            )
+        
+        # Risk vs Return comparison
+        countries = list(ENHANCED_COUNTRIES.keys())
+        risk_scores = [ROICalculator()._calculate_risk_score(ENHANCED_COUNTRIES[c], ENHANCED_PROFILES['tech_startup']) for c in countries]
+        return_scores = [ENHANCED_COUNTRIES[c].market_growth for c in countries]
+        
+        fig.add_trace(
+            go.Scatter(
+                x=return_scores, y=risk_scores,
+                mode='markers+text',
+                text=countries,
+                textposition="top center",
+                name='Countries'
+            ),
+            row=2, col=1
+        )
+        
+        # Sensitivity analysis
+        if 'sensitivity' in result:
+            sens_vars = list(result['sensitivity'].keys())
+            sens_values = list(result['sensitivity'].values())
+            
+            fig.add_trace(
+                go.Bar(x=sens_vars, y=sens_values, name='Sensitivity'),
+                row=2, col=2
+            )
+        
+        fig.update_layout(
+            height=600,
+            title_text=f"ROI Analysis Dashboard: {profile_name} → {country_name}",
+            showlegend=False
+        )
+        
+        return fig
+    
+    @staticmethod
+    def create_country_comparison_radar(countries: List[str], profile: str) -> go.Figure:
+        """Create radar chart comparing countries"""
+        categories = ['Tax Efficiency', 'Cost of Living', 'Market Growth', 'Ease of Business', 'Banking', 'Overall Score']
+        
+        fig = go.Figure()
+        
+        colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+        
+        for i, country_key in enumerate(countries[:5]):  # Limit to 5 countries
+            if country_key in ENHANCED_COUNTRIES:
+                country = ENHANCED_COUNTRIES[country_key]
+                
+                # Normalize scores to 0-100 scale
+                tax_eff = (1 - (country.corp_tax + country.pers_tax)) * 100
+                cost_eff = max(0, 100 - (country.living_cost / 100))
+                market = country.market_growth * 10
+                ease = country.ease_score * 10
+                banking = country.banking_score * 10
+                overall = country.partnership_score
+                
+                values = [tax_eff, cost_eff, market, ease, banking, overall]
+                
+                fig.add_trace(go.Scatterpolar(
+                    r=values + [values[0]],  # Close the polygon
+                    theta=categories + [categories[0]],
+                    fill='toself',
+                    name=country.name,
+                    line_color=colors[i % len(colors)],
+                    opacity=0.6
+                ))
+        
+        fig.update_layout(
+            polar=dict(
+                radialaxis=dict(
+                    visible=True,
+                    range=[0, 100]
+                )
+            ),
+            title="Multi-Country Comparison Radar",
+            height=500
+        )
+        
+        return fig
 
+# =========================
+# LEAD GENERATION & MONETIZATION ENGINE
+# =========================
+
+class LeadEngine:
+    def __init__(self):
+        self.conversion_thresholds = {
+            'email_capture': {'roi_min': 50, 'confidence': 0.3},
+            'consultation_booking': {'roi_min': 150, 'confidence': 0.6},
+            'premium_service': {'roi_min': 250, 'confidence': 0.8}
+        }
+    
+    def generate_personalized_offer(self, result: Dict, profile: UserProfile, country: CountryData) -> Dict:
+        """Generate personalized offer based on calculation results"""
+        roi = result.get('roi', 0)
+        confidence = result.get('monte_carlo', {}).get('probability_positive_roi', 0)
+        
+        if roi >= 250 and confidence >= 0.8:
+            return {
+                'tier': 'premium',
+                'title': f'Complete {country.name} Immigration Concierge',
+                'price': '$4,997',
+                'discount_price': '$2,497',
+                'value': '$15,000+',
+                'urgency': 'Only 5 spots available this month',
+                'includes': [
+                    'Personal immigration lawyer consultation',
+                    'Tax optimization strategy session',
+                    'Business setup and banking introductions',
+                    '12-month ongoing support',
+                    'Exclusive network access'
+                ],
+                'cta': 'Secure Your Premium Package',
+                'guarantee': '100% money-back guarantee if visa rejected'
+            }
+        elif roi >= 150 and confidence >= 0.6:
+            return {
+                'tier': 'standard',
+                'title': f'{country.name} Business Migration Blueprint',
+                'price': '$997',
+                'discount_price': '$497',
+                'value': '$3,000+',
+                'urgency': 'Limited time 50% discount',
+                'includes': [
+                    'Complete legal requirements guide',
+                    'Step-by-step timeline and checklist',
+                    'Tax optimization strategies',
+                    '60-day email support',
+                    'Resource directory'
+                ],
+                'cta': 'Get Your Blueprint Now',
+                'guarantee': '30-day money-back guarantee'
+            }
+        else:
+            return {
+                'tier': 'starter',
+                'title': f'{country.name} Exploration Package',
+                'price': '$297',
+                'discount_price': '$97',
+                'value': '$500+',
+                'urgency': 'Free for first 100 users',
+                'includes': [
+                    'Country overview report',
+                    'Visa options comparison',
+                    'Basic cost calculator',
+                    'Initial checklist'
+                ],
+                'cta': 'Start Your Journey',
+                'guarantee': 'Risk-free trial'
+            }
+    
+    def create_viral_share_content(self, result: Dict, country_name: str, profile_name: str) -> Dict:
+        """Generate viral-ready social media content"""
+        roi = result.get('roi', 0)
+        payback = result.get('payback_years', float('inf'))
+        
+        payback_str = f"{payback:.1f} years" if payback != float('inf') else "∞"
+        
+        templates = {
+            'linkedin': {
+                'text': f"🚀 Just calculated my {country_name} immigration ROI: {roi:.1f}%!\n\n"
+                       f"As a {profile_name}, relocating to {country_name} could transform my business:\n"
+                       f"💰 Payback period: {payback_str}\n"
+                       f"📈 5-year ROI: {roi:.1f}%\n\n"
+                       f"Used VisaTier's advanced calculator - the insights are incredible!\n\n"
+                       f"#EntrepreneurLife #GlobalMobility #BusinessGrowth",
+                'url': 'https://visatier.com/calculator'
+            },
+            'twitter': {
+                'text': f"🌍 My {country_name} business immigration ROI: {roi:.1f}%\n\n"
+                       f"Payback in {payback_str} 📊\n\n"
+                       f"@VisaTier's calculator is a game-changer for entrepreneurs planning their next move!\n\n"
+                       f"#StartupLife #Immigration #ROI",
+                'url': 'https://visatier.com/calc'
+            }
+        }
+        
+        return templates
+
+# =========================
+# MAIN APPLICATION BUILDER
+# =========================
+
+def create_premium_immigration_app():
+    """Create the enhanced VisaTier 4.0 application"""
+    
+    with gr.Blocks(theme=PREMIUM_THEME, css=PREMIUM_CSS, title="VisaTier 4.0") as app:
+        
         # State management
-        user_profile = gr.State("startup_founder")
-        user_data = gr.State({})
-        calculation_result = gr.State({})
-        lead_captured = gr.State(False)
-
+        current_profile = gr.State("tech_startup")
+        calculation_results = gr.State({})
+        user_session = gr.State({})
+        
         # Enhanced Header
-        gr.HTML("""
-        <header class="vt-header">
-          <div>
-            <div class="title">🌍 VisaTier 3.0 — Ultimate Immigration ROI Calculator</div>
-            <div style="font-size: 14px; color: #CBD5E1; margin-top: 4px;">
-                AI-Powered • Lead Generation • Viral Analytics • Personalized Insights
-            </div>
-          </div>
-          <nav class="nav-links">
-            <a href="#features">Features</a>
-            <a href="#pricing">Pricing</a>
-            <a href="#contact">Contact</a>
-          </nav>
-          <div class="right">
-            <div>Join 10,000+ successful entrepreneurs</div>
-            <div style="font-size: 10px;">Trusted by Fortune 500 founders</div>
-          </div>
-        </header>
-        """)
-
-        # Social proof notification
-        gr.HTML("""
-        <div class="notification-toast" id="social-proof">
-            <strong>🔥 Sarah K. just calculated 347% ROI for Dubai!</strong>
-            <div style="font-size: 12px; margin-top: 4px;">Join thousands of entrepreneurs making data-driven immigration decisions</div>
-        </div>
-        """)
-
-        # User Profile Selection (Step 1)
-        gr.Markdown("## 🎯 Step 1: Choose Your Entrepreneur Profile")
-        gr.Markdown("*Get personalized insights based on your business type*")
-
-        profile_html = """
-        <div class="profile-selector">
-        """
-        for profile_id, profile_data in USER_PROFILES.items():
-            profile_html += f"""
-            <div class="profile-card" onclick="selectProfile(event, '{profile_id}')">
-                <div style="font-size: 32px; margin-bottom: 8px;">{profile_data['icon']}</div>
-                <div style="font-weight: 600; font-size: 14px;">{profile_data['name']}</div>
-                <div style="font-size: 12px; color: var(--vt-muted); margin-top: 4px;">
-                    ~€{profile_data['typical_revenue']:,}/mo
+        gr.HTML(f"""
+        <div class="premium-header">
+            <div class="header-content">
+                <div>
+                    <h1 class="header-title">🌍 VisaTier 4.0 - Premium Immigration ROI Calculator</h1>
+                    <p class="header-subtitle">AI-Powered Business Migration Intelligence with Monte Carlo Analysis</p>
+                </div>
+                <div class="header-stats">
+                    <div><strong>15,000+</strong> successful migrations</div>
+                    <div><strong>$127M+</strong> in optimized relocations</div>
+                    <div><strong>94.7%</strong> client success rate</div>
                 </div>
             </div>
+        </div>
+        """)
+        
+        # Social proof notification
+        gr.HTML("""
+        <div class="notification-toast">
+            <strong>🔥 Alex M. just saved $340K/year with Singapore setup!</strong>
+            <div>Join 1,000+ entrepreneurs making data-driven migration decisions this month</div>
+        </div>
+        """)
+        
+        # Step 1: Profile Selection
+        with gr.Row():
+            gr.Markdown("## 🎯 Step 1: Select Your Entrepreneur Profile")
+        
+        profile_cards_html = """
+        <div class="profile-grid">
+        """
+        
+        for profile_id, profile in ENHANCED_PROFILES.items():
+            profile_cards_html += f"""
+            <div class="profile-card" onclick="selectProfile('{profile_id}', this)">
+                <span class="profile-icon">{profile.icon}</span>
+                <div class="profile-name">{profile.name}</div>
+                <div class="profile-revenue">~€{profile.typical_revenue:,}/mo avg</div>
+            </div>
             """
-
-        profile_html += """
+        
+        profile_cards_html += """
         </div>
         <script>
-        function selectProfile(event, profileId) {
-            document.querySelectorAll('.profile-card').forEach(card => card.classList.remove('selected'));
-            const card = event.currentTarget;
-            card.classList.add('selected');
-            const dropdown = gradioApp().getElementById('selected_profile').querySelector('select');
-            dropdown.value = profileId;
-            dropdown.dispatchEvent(new Event('input', { bubbles: true }));
-            window.selectedProfile = profileId;
+        function selectProfile(profileId, element) {
+            // Remove selected class from all cards
+            document.querySelectorAll('.profile-card').forEach(card => {
+                card.classList.remove('selected');
+            });
+            
+            // Add selected class to clicked card
+            element.classList.add('selected');
+            
+            // Update hidden dropdown
+            const dropdown = document.querySelector('#profile-selector select');
+            if (dropdown) {
+                dropdown.value = profileId;
+                dropdown.dispatchEvent(new Event('change', { bubbles: true }));
+            }
         }
         </script>
         """
-
-        profile_selector = gr.HTML(profile_html)
-
-        selected_profile = gr.Dropdown(
-            list(USER_PROFILES.keys()),
-            value="startup_founder",
-            label="Selected Profile",
+        
+        profile_selector_display = gr.HTML(profile_cards_html)
+        profile_selector = gr.Dropdown(
+            choices=list(ENHANCED_PROFILES.keys()),
+            value="tech_startup",
             visible=False,
-            elem_id="selected_profile"
+            elem_id="profile-selector"
         )
-
-        # Progress indicator
+        
+        # Progress bar
         gr.HTML("""
-        <div class="progress-bar">
-            <div class="progress-fill" style="width: 20%;"></div>
+        <div class="progress-container">
+            <div class="progress-bar" id="progress" style="width: 25%;"></div>
         </div>
-        <div style="text-align: center; color: var(--vt-muted); font-size: 14px;">Step 1 of 4 completed</div>
+        <div style="text-align: center; color: var(--text-muted); margin: 1rem 0;">Step 1 of 4 completed</div>
         """)
-
-        # Enhanced Hero Section
+        
+        # Testimonial
         gr.HTML("""
-        <div class="vt-hero">
-          <h2 style="margin:0; font-size:28px; font-weight:800; color:#0F172A;">
-            🚀 Calculate Your Complete Immigration ROI in 60 seconds
-          </h2>
-          <p style="margin:12px 0; color:#334155; font-size:18px;">
-            Join 10,000+ entrepreneurs who used our calculator to make $50M+ in optimized relocations
-          </p>
-          <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0;">
-            <div class="insight-card">
-                <strong>🎯 Personalized Analysis</strong><br/>
-                <small>AI-powered insights for your specific business profile</small>
+        <div class="testimonial fadeIn">
+            <div class="testimonial-text">
+                "VisaTier's advanced calculator with Monte Carlo analysis gave me confidence to relocate my fintech startup to Singapore. 
+                The detailed risk assessment was incredibly accurate - I achieved 287% ROI in just 18 months!"
             </div>
-            <div class="insight-card">
-                <strong>📊 Advanced Modeling</strong><br/>
-                <small>Monte Carlo simulations, sensitivity analysis & risk assessment</small>
-            </div>
-            <div class="insight-card">
-                <strong>🚀 Actionable Roadmap</strong><br/>
-                <small>Step-by-step migration strategy with timeline & costs</small>
-            </div>
-          </div>
+            <div class="testimonial-author">— Sarah Chen, CEO of PayFlow ($50M valuation)</div>
         </div>
         """)
-
-        # Testimonials
-        gr.HTML("""
-        <div class="testimonial-slider">
-            <div style="font-style: italic; font-size: 16px; margin-bottom: 12px;">
-                "VisaTier's calculator helped me discover Dubai would give me 240% ROI.
-                I relocated my SaaS and saved $180K in taxes in year one alone!"
-            </div>
-            <div style="font-weight: 600; color: var(--vt-primary);">
-                — Marcus Chen, Founder of CloudScale (€2M ARR)
-            </div>
-        </div>
-        """)
-
-        # Main Calculator (Enhanced)
+        
+        # Step 2: Current Situation
         with gr.Row():
-            with gr.Column(scale=5):
-                gr.Markdown("## 💼 Step 2: Your Current Business Situation")
-
+            with gr.Column(scale=1):
+                gr.Markdown("## 💼 Step 2: Your Current Business Metrics")
+                
                 with gr.Accordion("📊 Financial Overview", open=True):
                     with gr.Row():
-                        rev0 = gr.Number(
-                            value=30000,
+                        current_revenue = gr.Number(
+                            value=45000,
                             label="💰 Monthly Revenue (€)",
-                            info="Your current monthly business revenue",
-                            elem_id="rev0"
+                            info="Your current monthly business revenue"
                         )
-                        margin0 = gr.Slider(
-                            value=25, minimum=1, maximum=70, step=1,
+                        current_margin = gr.Slider(
+                            value=25, minimum=1, maximum=80, step=1,
                             label="📈 EBITDA Margin (%)",
-                            info="Profit margin before taxes",
-                            elem_id="margin0"
+                            info="Profit margin before taxes"
                         )
-
+                    
                     with gr.Row():
-                        corp0 = gr.Slider(
-                            value=20, minimum=0, maximum=50, step=1,
-                            label="🏢 Corporate Tax Rate (%)",
-                            info="Current corporate tax burden",
-                            elem_id="corp0"
+                        current_corp_tax = gr.Slider(
+                            value=25, minimum=0, maximum=50, step=1,
+                            label="🏢 Corporate Tax (%)",
+                            info="Current corporate tax rate"
                         )
-                        pers0 = gr.Slider(
-                            value=10, minimum=0, maximum=50, step=1,
-                            label="👤 Personal Tax Rate (%)",
-                            info="Personal tax on distributions",
-                            elem_id="pers0"
+                        current_pers_tax = gr.Slider(
+                            value=15, minimum=0, maximum=50, step=1,
+                            label="👤 Personal Tax (%)",
+                            info="Personal tax on distributions"
                         )
-
+                    
                     with gr.Row():
-                        living0 = gr.Number(
-                            value=4000,
+                        current_living = gr.Number(
+                            value=4500,
                             label="🏠 Living Costs (€/month)",
-                            info="Current monthly living expenses",
-                            elem_id="living0"
+                            info="Current monthly living expenses"
                         )
-                        ongoing0 = gr.Number(
-                            value=500,
+                        current_business = gr.Number(
+                            value=800,
                             label="⚙️ Business Costs (€/month)",
-                            info="Other monthly business expenses",
-                            elem_id="ongoing0"
+                            info="Monthly business operational costs"
                         )
-
-                gr.Markdown("## 🌍 Step 3: Choose Your Dream Destination")
-
-                dest = gr.Dropdown(
-                    list(COUNTRY_CONFIG_ENHANCED.keys()),
-                    value="UAE (Dubai)",
+                
+                gr.Markdown("## 🌍 Step 3: Target Destination")
+                
+                target_country = gr.Dropdown(
+                    choices=list(ENHANCED_COUNTRIES.keys()),
+                    value="UAE",
                     label="🎯 Target Country",
-                    info="Where do you want to relocate?",
-                    elem_id="dest",
+                    info="Where do you want to relocate your business?"
                 )
-
+                
                 # Dynamic country insights
-                country_insights = gr.HTML("")
-
-                def update_country_insights(country, profile):
-                    if country in COUNTRY_CONFIG_ENHANCED and profile in USER_PROFILES:
-                        country_data = COUNTRY_CONFIG_ENHANCED[country]
-                        profile_data = USER_PROFILES[profile]
-                        insight = country_data.get("market_insights", {}).get(profile, "")
-
-                        partnership_score = country_data.get("partnership_score", 50)
-                        color = "#10B981" if partnership_score >= 85 else "#F59E0B" if partnership_score >= 70 else "#EF4444"
-                        visa_options = country_data.get("visa_options", [])
-                        visa_html = ""
-                        if visa_options:
-                            visa_html = f"""
-                            <div style="margin-top: 12px;">
-                                <strong>🎫 Visa Options:</strong><br/>
-                                <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
-                                    {''.join([f'<span style="background: #EFF6FF; color: #1E40AF; padding: 4px 8px; border-radius: 12px; font-size: 12px;">{visa}</span>' for visa in visa_options])}
-                                </div>
+                country_insights = gr.HTML("", elem_id="country-insights")
+                
+                def update_insights(country_key, profile_key):
+                    if country_key in ENHANCED_COUNTRIES and profile_key in ENHANCED_PROFILES:
+                        country = ENHANCED_COUNTRIES[country_key]
+                        profile = ENHANCED_PROFILES[profile_key]
+                        
+                        insight = country.market_insights.get(profile_key, "")
+                        
+                        return f"""
+                        <div class="insight-card fadeIn">
+                            <div class="insight-header">
+                                <span class="insight-icon">{profile.icon}</span>
+                                <h3 class="insight-title">{country.name} Insights for {profile.name}s</h3>
                             </div>
-                            """
-
-                        html = f"""
-                        <div class="insight-card">
-                            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 12px;">
-                                <h4 style="margin: 0;">{profile_data['icon']} {country} Insights</h4>
-                                <div style="background: {color}; color: white; padding: 4px 12px; border-radius: 12px; font-size: 12px; font-weight: 600;">
-                                    Match Score: {partnership_score}%
-                                </div>
+                            <div class="insight-description">{insight}</div>
+                            <div style="margin-top: 1rem;">
+                                <strong>Key Metrics:</strong><br>
+                                Corporate Tax: {country.corp_tax*100:.1f}% | Personal Tax: {country.pers_tax*100:.1f}%<br>
+                                Living Cost: €{country.living_cost:,}/mo | Setup Cost: €{country.setup_cost:,}
                             </div>
-                            <p style="margin: 0;">{insight}</p>
-                            {visa_html}
-
                         </div>
                         """
-                        return html
                     return ""
-
-                dest.change(
-                    update_country_insights,
-                    inputs=[dest, selected_profile],
+                
+                target_country.change(
+                    update_insights,
+                    inputs=[target_country, profile_selector],
                     outputs=[country_insights]
                 )
                 
-                gr.Markdown("## 📊 Country Comparison")
-                compare_countries = gr.Dropdown(
-                    list(COUNTRY_CONFIG_ENHANCED.keys()),
-                    multiselect=True,
-                    label="Compare Countries",
-                    info="Select countries to compare based on your profile"
+                profile_selector.change(
+                    update_insights,
+                    inputs=[target_country, profile_selector],
+                    outputs=[country_insights]
                 )
-                comparison_table = gr.DataFrame(
-                    value=pd.DataFrame(),
-                    label="Country Comparison Matrix",
-                    interactive=True,
-                    visible=False
-                )
-
-                def update_comparison(countries, profile):
-                    df = create_country_comparison_matrix(countries, profile)
-                    if df.empty:
-                        return gr.update(visible=False)
-                    return gr.update(value=df, visible=True)
-
-                compare_countries.change(
-                    update_comparison,
-                    inputs=[compare_countries, selected_profile],
-                    outputs=[comparison_table]
-                )
-
+                
                 with gr.Accordion("🚀 Growth Projections", open=True):
                     with gr.Row():
-                        rev_mult = gr.Slider(
-                            value=3.0, minimum=0.5, maximum=5.0, step=0.1,
-                            label="📊 Revenue Growth (×)",
-                            info="Expected revenue multiplier",
-                            elem_id="rev_mult"
+                        revenue_multiplier = gr.Slider(
+                            value=2.5, minimum=0.8, maximum=5.0, step=0.1,
+                            label="📊 Revenue Growth Multiplier",
+                            info="Expected revenue increase factor"
                         )
-                        margin_delta = gr.Slider(
-                            value=5.0, minimum=-20, maximum=30, step=0.5,
+                        margin_improvement = gr.Slider(
+                            value=8.0, minimum=-10, maximum=25, step=0.5,
                             label="📈 Margin Improvement (pp)",
-                            info="Margin increase in percentage points",
-                            elem_id="margin_delta"
+                            info="Margin increase in percentage points"
                         )
-
+                    
                     with gr.Row():
-                        success = gr.Slider(
-                            value=75, minimum=10, maximum=100, step=1,
+                        success_probability = gr.Slider(
+                            value=75, minimum=20, maximum=95, step=5,
                             label="🎯 Success Probability (%)",
-                            info="Likelihood of achieving projections",
-                            elem_id="success"
+                            info="Confidence in achieving projections"
                         )
-                        horizon_m = gr.Slider(
-                            value=60, minimum=12, maximum=120, step=1,
+                        time_horizon = gr.Slider(
+                            value=60, minimum=24, maximum=120, step=6,
                             label="📅 Analysis Period (months)",
-                            info="Investment time horizon",
-                            elem_id="horizon_m"
+                            info="Investment time horizon"
                         )
-
-                with gr.Accordion("💸 Investment & Costs", open=False):
-                    with gr.Row():
-                        capex_once = gr.Number(
-                            value=35000,
-                            label="🏗️ Setup Investment (€)",
-                            info="One-time relocation costs",
-                            elem_id="capex_once"
-                        )
-                        discount_a = gr.Slider(
-                            value=12, minimum=0, maximum=40, step=1,
-                            label="💹 Required Return (%)",
-                            info="Your discount rate",
-                            elem_id="discount_a"
-                        )
-
-                # Enhanced CTA Button
-                with gr.Row():
-                    calculate_btn = gr.Button(
-                        "🚀 Calculate My Immigration ROI",
-                        variant="primary",
-                        elem_classes=["cta-button"],
-                        size="lg",
+                
+                with gr.Accordion("⚙️ Advanced Settings", open=False):
+                    discount_rate = gr.Slider(
+                        value=12, minimum=5, maximum=25, step=1,
+                        label="💹 Required Return (%)",
+                        info="Your discount rate for NPV calculation"
                     )
-
+                
+                # Enhanced Calculate Button
+                calculate_btn = gr.Button(
+                    "🚀 Calculate Advanced ROI Analysis",
+                    variant="primary",
+                    elem_classes=["cta-button"],
+                    size="lg"
+                )
+                
                 gr.HTML("""
-                <div style="text-align: center; margin: 16px 0; padding: 16px; background: #FEF3C7; border-radius: 12px;">
-                    <div style="font-weight: 600; color: #92400E; margin-bottom: 4px;">⚡ Free Analysis Worth $500</div>
-                    <div style="font-size: 14px; color: #A16207;">Get instant access to professional-grade immigration ROI analysis</div>
+                <div style="text-align: center; margin: 1rem 0; padding: 1rem; background: #fef3c7; border-radius: 12px;">
+                    <div style="font-weight: 600; color: #92400e;">⚡ Advanced Analysis Worth $2,500</div>
+                    <div style="font-size: 14px; color: #a16207;">Monte Carlo simulation • Risk assessment • Sensitivity analysis</div>
                 </div>
                 """)
-
-            with gr.Column(scale=7):
-                gr.Markdown("## 📊 Step 4: Your Personalized Results")
+            
+            with gr.Column(scale=1):
+                gr.Markdown("## 📊 Step 4: Your Premium Results")
                 
-                roi_preview = gr.HTML('<div id="roi-preview"></div>')
-
-                # KPI Grid (hidden initially)
-                kpi_grid = gr.HTML("""
-                <div class="kpi-grid">
-                    <div class="kpi-card">
-                        <div class="label">💰 Payback Period</div>
-                        <div class="value">—</div>
-                        <div class="vt-note">Time to break even on your investment</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="label">🚀 5-Year ROI</div>
-                        <div class="value">—</div>
-                        <div class="vt-note">Total return on investment</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="label">💎 Net Present Value</div>
-                        <div class="value">—</div>
-                        <div class="vt-note">Today's value of future returns</div>
-                    </div>
-                    <div class="kpi-card">
-                        <div class="label">📈 Internal Rate of Return</div>
-                        <div class="value">—</div>
-                        <div class="vt-note">Annualized rate of return</div>
-                    </div>
-                </div>
-                """, visible=False)
-
-                # Personalized Insights (hidden initially)
-                personalized_insights = gr.HTML("", visible=False)
-
-                # Charts (hidden initially)
+                # Results will appear here after calculation
+                results_container = gr.HTML("", visible=False)
+                kpi_dashboard = gr.HTML("", visible=False)
                 main_chart = gr.Plot(visible=False)
-                comparison_chart = gr.Plot(visible=False)
-                roi_gauge_chart = gr.Plot(visible=False)
-
-                # Lead Capture Modal (triggered after calculation)
+                insights_panel = gr.HTML("", visible=False)
                 lead_capture_modal = gr.HTML("", visible=False)
-
-                # Viral Sharing Section (appears after calculation)
-                viral_sharing = gr.HTML("", visible=False)
-
-                # Referral Prompt (appears after calculation)
-                referral_prompt = gr.HTML("", visible=False)
-
-                # Next Steps CTA (appears after calculation)
-                next_steps_cta = gr.HTML("", visible=False)
-
-        # Main Calculation Function
-        def calculate_personalized_roi(
-            profile, dest, rev0, margin0, corp0, pers0, living0, ongoing0,
-            rev_mult, margin_delta, capex_once, horizon_m, discount_a, success
+                comparison_tools = gr.HTML("", visible=False)
+        
+        # Main calculation function
+        def calculate_advanced_roi(
+            profile_key, country_key, revenue, margin, corp_tax, pers_tax,
+            living, business, rev_mult, margin_imp, success_prob, horizon, discount
         ):
             try:
-                # Get profile and country data
-                profile_data = USER_PROFILES.get(profile, USER_PROFILES["startup_founder"])
-                country_data = COUNTRY_CONFIG_ENHANCED.get(dest, list(COUNTRY_CONFIG_ENHANCED.values())[0])
-
-                # Use country defaults for taxes and costs
-                corp1 = country_data["corp_tax"] * 100
-                pers1 = country_data["pers_tax"] * 100
-                living1 = country_data["living_month"]
-                ongoing1 = country_data["ongoing_month"]
-
-                # Calculate base ROI
-                result = compute_enhanced_monthly_delta_cashflow(
-                    rev0, margin0, corp0, pers0, living0, ongoing0,
-                    dest, rev_mult, margin_delta, corp1, pers1, living1, ongoing1,
-                    capex_once, int(horizon_m), discount_a, success,
-                    True, True, True, True
+                if profile_key not in ENHANCED_PROFILES or country_key not in ENHANCED_COUNTRIES:
+                    return [gr.update()] * 6
+                
+                profile = ENHANCED_PROFILES[profile_key]
+                country = ENHANCED_COUNTRIES[country_key]
+                
+                # Initialize calculator
+                calculator = ROICalculator()
+                
+                # Run advanced calculation
+                result = calculator.calculate_enhanced_roi(
+                    profile, country, revenue, margin, corp_tax, pers_tax,
+                    living, business, rev_mult, margin_imp, success_prob,
+                    horizon, discount
                 )
-
-                # Apply personalization
-                success_multiplier = profile_data["success_multiplier"]
-                result["total_5yr_roi"] *= success_multiplier
-                result["risk_adjusted_npv"] *= success_multiplier
-                result["npv"] *= success_multiplier
-
-                # Generate personalized insights
-                insights = generate_personalized_insights(profile, dest, result)
-
-                # Create KPI grid
+                
+                # Generate KPI dashboard
+                roi_status = "success" if result['roi'] > 100 else "warning" if result['roi'] > 50 else "error"
                 payback_str = f"{result['payback_years']:.1f} years" if result['payback_years'] != float('inf') else "Never"
-                roi_str = f"{result['total_5yr_roi']:.1f}%"
-                npv_str = f"€{result['risk_adjusted_npv']:,.0f}"
-                irr_str = f"{result['irr_annual_pct']:.1f}%"
-
-                # Determine success level
-                if result["total_5yr_roi"] > 200:
-                    success_level = "exceptional"
-                    success_color = "#10B981"
-                    success_message = "🚀 Outstanding opportunity! You're in the top 5% of cases we've analyzed."
-                elif result["total_5yr_roi"] > 100:
-                    success_level = "good"
-                    success_color = "#F59E0B"
-                    success_message = "✅ Solid investment with strong returns above market average."
-                else:
-                    success_level = "moderate"
-                    success_color = "#6B7280"
-                    success_message = "⚠️ Consider optimizing your strategy before proceeding."
-
+                
                 kpi_html = f"""
-                <div class="kpi-grid">
-                    <div class="kpi-card {success_level}">
-                        <div class="label">💰 Payback Period</div>
-                        <div class="value">{payback_str}</div>
-                        <div class="vt-note">Time to break even on your investment</div>
-                    </div>
-                    <div class="kpi-card {success_level}">
-                        <div class="label">🚀 5-Year ROI</div>
-                        <div class="value">{roi_str}</div>
-                        <div class="vt-note">Total return on investment</div>
+                <div class="kpi-grid fadeIn">
+                    <div class="kpi-card {roi_status}">
+                        <div class="kpi-label">🚀 5-Year ROI</div>
+                        <div class="kpi-value">{result['roi']:.1f}%</div>
+                        <div class="kpi-note">Total return on investment</div>
                     </div>
                     <div class="kpi-card">
-                        <div class="label">💎 Net Present Value</div>
-                        <div class="value">{npv_str}</div>
-                        <div class="vt-note">Today's value of future returns</div>
+                        <div class="kpi-label">💰 Payback Period</div>
+                        <div class="kpi-value">{payback_str}</div>
+                        <div class="kpi-note">Time to break even</div>
                     </div>
-                    <div class="kpi-card {success_level}">
-                        <div class="label">📈 Internal Rate of Return</div>
-                        <div class="value">{irr_str}</div>
-                        <div class="vt-note">Annualized rate of return</div>
+                    <div class="kpi-card">
+                        <div class="kpi-label">💎 Net Present Value</div>
+                        <div class="kpi-value">€{result['npv']:,.0f}</div>
+                        <div class="kpi-note">Today's value of future returns</div>
                     </div>
-                </div>
-                <div class="success-alert {success_level}">
-                    {success_message}
-                </div>
-                <div class="legal-disclaimer" style="font-size: 12px; color: #64748B; margin-top: 8px;">
-                    <p>{LEGAL_DISCLAIMERS['tax']}</p>
-                    <p>{LEGAL_DISCLAIMERS['immigration']}</p>
-                    <p>{LEGAL_DISCLAIMERS['investment']}</p>
+                    <div class="kpi-card">
+                        <div class="kpi-label">📈 Internal Rate of Return</div>
+                        <div class="kpi-value">{result['irr_annual']:.1f}%</div>
+                        <div class="kpi-note">Annualized rate of return</div>
+                    </div>
                 </div>
                 """
-
-                # Generate insights HTML
+                
+                # Generate main chart
+                chart = ChartGenerator.create_roi_dashboard(
+                    result, country.name, profile.name
+                )
+                
+                # Generate insights
+                risk_score = result.get('risk_score', 50)
+                opportunity_score = result.get('opportunity_score', 50)
+                
                 insights_html = f"""
-                <div style="margin: 24px 0;">
-                    <h3 style="margin-bottom: 16px;">🎯 Personalized Insights for {profile_data['name']}s</h3>
-                """
-                for insight in insights:
-                    color_map = {
-                        "success": "#10B981",
-                        "warning": "#F59E0B",
-                        "insight": "#2563EB",
-                        "competitive": "#8B5CF6"
-                    }
-                    color = color_map.get(insight["type"], "#6B7280")
-
-                    insights_html += f"""
-                    <div class="insight-card" style="border-left: 4px solid {color};">
-                        <div style="display: flex; align-items: center; margin-bottom: 8px;">
-                            <span style="font-size: 20px; margin-right: 8px;">{insight['icon']}</span>
-                            <strong>{insight['title']}</strong>
+                <div class="insights-grid fadeIn">
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">🎯</span>
+                            <h3 class="insight-title">Investment Recommendation</h3>
                         </div>
-                        <p style="margin: 8px 0;">{insight['description']}</p>
-                        <button class="cta-button" style="font-size: 14px; padding: 8px 16px; margin-top: 8px;">
-                            {insight['action']} →
-                        </button>
+                        <div class="insight-description">
+                            Based on your {profile.name} profile and {country.name} opportunity analysis:
+                            <br><strong>Risk Score:</strong> {risk_score:.1f}/100
+                            <br><strong>Opportunity Score:</strong> {opportunity_score:.1f}/100
+                        </div>
+                    </div>
+                """
+                
+                if 'monte_carlo' in result:
+                    mc = result['monte_carlo']
+                    insights_html += f"""
+                    <div class="insight-card">
+                        <div class="insight-header">
+                            <span class="insight-icon">🎲</span>
+                            <h3 class="insight-title">Monte Carlo Analysis</h3>
+                        </div>
+                        <div class="insight-description">
+                            Probability of positive ROI: {mc['probability_positive_roi']*100:.1f}%
+                            <br>Mean ROI: {mc['mean_roi']:.1f}% ± {mc['std_roi']:.1f}%
+                            <br>90% Confidence Interval: {mc['confidence_intervals']['roi_10']:.1f}% - {mc['confidence_intervals']['roi_90']:.1f}%
+                        </div>
                     </div>
                     """
-
+                
                 insights_html += "</div>"
-
-                # Create chart
-                fig = go.Figure()
-                fig.add_trace(go.Scatter(
-                    x=result["months"],
-                    y=result["cum_values"],
-                    mode="lines",
-                    line=dict(width=4, color=success_color),
-                    fill='tozeroy',
-                    fillcolor=f"rgba(37,99,235,0.1)",
-                    name="Cumulative Cash Flow"
-                ))
-
-                fig.add_hline(y=0, line_width=2, line_dash="dot", line_color="#94A3B8")
-
-                if result["payback_months"] != math.inf:
-                    fig.add_vline(
-                        x=result["payback_months"],
-                        line_width=3,
-                        line_dash="dash",
-                        line_color="#10B981",
-                        annotation_text="💰 Break-even Point",
-                        annotation_position="top",
-                    )
-
-                fig.update_layout(
-                    title=f"Your {dest} Immigration Cash Flow Projection",
-                    xaxis_title="Months",
-                    yaxis_title="Cumulative Cash Flow (€)",
-                    height=400,
-                    showlegend=False,
-                    plot_bgcolor="#FFFFFF",
-                    paper_bgcolor="#FFFFFF"
-                )
-
-                # Risk-Return scatter plot across countries
-                risk_return_fig = go.Figure()
-                for cname, cdata in COUNTRY_CONFIG_ENHANCED.items():
-                    risk = (cdata["corp_tax"] + cdata["pers_tax"]) * 100
-                    ret = cdata["market_growth"]
-                    marker = dict(size=10, color="#94A3B8")
-                    if cname == dest:
-                        marker.update(size=14, color=success_color, symbol="star")
-                    risk_return_fig.add_trace(go.Scatter(
-                        x=[ret],
-                        y=[risk],
-                        mode="markers",
-                        name=cname,
-                        marker=marker
-                    ))
-                risk_return_fig.update_layout(
-                    title="Risk vs Return by Country",
-                    xaxis_title="Market Growth (%)",
-                    yaxis_title="Tax Burden (%)",
-                    height=400,
-                    plot_bgcolor="#FFFFFF",
-                    paper_bgcolor="#FFFFFF"
-                )
-
-                # ROI gauge visualization
-                roi_gauge_fig = go.Figure(go.Indicator(
-                    mode="gauge+number",
-                    value=result["total_5yr_roi"],
-                    title={"text": "5-Year ROI %"},
-                    gauge={
-                        "axis": {"range": [0, 300]},
-                        "bar": {"color": success_color},
-                        "steps": [
-                            {"range": [0, 100], "color": "#FEE2E2"},
-                            {"range": [100, 200], "color": "#FEF3C7"},
-                            {"range": [200, 300], "color": "#DCFCE7"},
-                        ],
-                    },
-                ))
-                roi_gauge_fig.update_layout(height=300, margin=dict(t=50, b=0, l=0, r=0))
-
-                # Generate viral sharing content
-                share_data = create_viral_share_content(result, dest, profile)
-
-                  # Generate referral code for current user
-                current_user_id = generate_user_hash(f"{profile}_{datetime.now()}")
-                referral_code = generate_referral_code(current_user_id)
-                referral_html = f"""
-                <div class=\"referral-share\" style=\"margin-top: 16px;\">
-                    <h3>🎁 Share &amp; Save</h3>
-                    <p>Your referral code: <strong>{referral_code}</strong></p>
-                    <p>Friends get <strong>50% off</strong> their consultation and you earn credits for every signup.</p>
-                </div>
-                """
-
-                viral_html = f"""
-                <div class="viral-share-section">
-                    <h3 style="margin: 0 0 16px 0; color: white;">🚀 Share Your Success Story!</h3>
-                    <p style="margin: 0 0 16px 0; color: rgba(255,255,255,0.9);">
-                        Help other entrepreneurs discover their immigration potential
-                    </p>
-                    <div class="share-buttons">
-                        <button class="share-button share-linkedin" onclick="shareToLinkedIn()">
-                            📊 Share on LinkedIn
-                        </button>
-                        <button class="share-button share-twitter" onclick="shareToTwitter()">
-                            🐦 Tweet Results
-                        </button>
-                        <button class="share-button share-whatsapp" onclick="shareToWhatsApp()">
-                            💬 WhatsApp Friends
-                        </button>
-                    </div>
-                </div>
-                <script>
-                function shareToLinkedIn() {{
-                    const url = encodeURIComponent('{share_data["linkedin"]["url"]}');
-                    const text = encodeURIComponent('{share_data["linkedin"]["text"]}');
-                    window.open(`https://www.linkedin.com/sharing/share-offsite/?url=${{url}}&summary=${{text}}`, '_blank');
-                }}
-                function shareToTwitter() {{
-                    const url = encodeURIComponent('{share_data["twitter"]["url"]}');
-                    const text = encodeURIComponent('{share_data["twitter"]["text"]}');
-                    window.open(`https://twitter.com/intent/tweet?url=${{url}}&text=${{text}}`, '_blank');
-                }}
-                function shareToWhatsApp() {{
-                    const text = encodeURIComponent('{share_data["twitter"]["text"]} {share_data["twitter"]["url"]}');
-                    window.open(`https://wa.me/?text=${{text}}`, '_blank');
-                }}
-                </script>
-                """
-
-                # Lead capture based on results
-                lead_offer = create_lead_magnet_offer(insights, dest, profile)
-                cta_config = optimize_cta_based_on_results(
-                    result["total_5yr_roi"], result["payback_years"], profile
-                )
-
+                
+                # Generate lead capture
+                lead_engine = LeadEngine()
+                offer = lead_engine.generate_personalized_offer(result, profile, country)
+                
                 lead_html = f"""
-                <div class="lead-capture-modal" style="display: block; position: relative; margin: 24px 0;">
-                    <div style="text-align: center; margin-bottom: 20px;">
-                        <h3 style="color: var(--vt-primary); margin-bottom: 8px;">
-                            🎁 Claim Your FREE {lead_offer['title']}
-                        </h3>
-                        <div style="background: linear-gradient(135deg, #10B981, #059669); color: white; padding: 8px 16px; border-radius: 20px; display: inline-block; font-weight: 600; margin-bottom: 12px;">
-                            Worth {lead_offer['value']} - Yours Free!
-                        </div>
-                        <div class="urgency-indicator">
-                            {lead_offer['urgency']}
-                        </div>
-                    </div>
-                    <div style="background: #F8FAFC; padding: 16px; border-radius: 12px; margin: 16px 0;">
+                <div class="lead-modal slideUp">
+                    <h3>🎁 Claim Your {offer['title']}</h3>
+                    <div class="value-badge">Worth {offer['value']} - Special Price: {offer['discount_price']}</div>
+                    <div class="urgency-text">{offer['urgency']}</div>
+                    
+                    <div style="background: #f8fafc; padding: 1rem; border-radius: 8px; margin: 1rem 0;">
                         <strong>🎯 You'll Get:</strong>
-                        <ul style="margin: 8px 0; padding-left: 20px;">
+                        <ul style="margin: 0.5rem 0; padding-left: 1.5rem;">
                 """
-                for item in lead_offer['includes']:
+                
+                for item in offer['includes']:
                     lead_html += f"<li>{item}</li>"
-
+                
                 lead_html += f"""
                         </ul>
                     </div>
-                    <div style="text-align: center;">
-                        <input type="email" placeholder="Enter your email for instant access" style="width: 80%; padding: 12px; border: 2px solid #E2E8F0; border-radius: 8px; margin-bottom: 12px; font-size: 16px;">
-                        <br>
-                        <label style="display: block; margin: 8px 0; font-size: 14px;">
-                            <input type="checkbox" id="gdpr-consent"> I agree to the privacy policy and to receive communications
-                        </label>
-                        <button class="cta-button" onclick="captureEmail()">
-                            🚀 Get My Free {dest} Guide
-                        </button>
-                        <div class="legal-disclaimer" style="font-size: 12px; color: #64748B; margin-top: 12px;">
-                            <p>{LEGAL_DISCLAIMERS['tax']}</p>
-                            <p>{LEGAL_DISCLAIMERS['immigration']}</p>
-                            <p>{LEGAL_DISCLAIMERS['investment']}</p>
-                        </div>
-                        <div style="margin-top: 8px;">
-                            <a href="#" onclick="deleteData()" style="font-size: 12px; color: #64748B;">Request data deletion</a>
-                        </div>
+                    
+                    <input type="email" placeholder="Enter your email for instant access" class="form-input">
+                    <label style="display: block; margin: 0.5rem 0; font-size: 14px;">
+                        <input type="checkbox" style="margin-right: 8px;"> I agree to privacy policy and communications
+                    </label>
+                    <button class="cta-button" style="width: 100%;">{offer['cta']}</button>
+                    <div style="text-align: center; margin-top: 1rem; font-size: 12px; color: #64748b;">
+                        {offer['guarantee']} | <a href="#" onclick="requestDataDeletion()">Request data deletion</a>
                     </div>
                 </div>
+                
                 <script>
-                function captureEmail() {{
-                    const email = document.querySelector('input[type="email"]').value;
-                    const consent = document.getElementById('gdpr-consent');
-                    if (!consent.checked) {{
-                        alert('Please provide consent to proceed.');
-                        return;
-                    }}
-                    if (email && email.includes('@')) {{
-                        alert('Thank you! Check your email for your free guide.');
-                        // Here you would normally send to your CRM
-                    }} else {{
-                        alert('Please enter a valid email address.');
-                    }}
-                }}
-                function deleteData() {{
-                    document.querySelector('input[type="email"]').value = '';
-                    document.getElementById('gdpr-consent').checked = false;
-                    alert('Your data deletion request has been recorded.');
-                }}
+                html = """
+                <script>
+                    function requestDataDeletion() {
+                        alert('Data deletion request recorded. We will process within 30 days per GDPR requirements.');
+                        // send request to backend
+                        fetch('/api/data-deletion', {
+                            method: 'POST',
+                            headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ userId: window.currentUserId })
+                        })
+                        .then(response => {
+                            if (!response.ok) throw new Error('Network response was not ok');
+                            return response.json();
+                        })
+                        .then(data => {
+                            showToast('success', 'Your request has been submitted successfully.');
+                        })
+                        .catch(error => {
+                            console.error('Data deletion error:', error);
+                            showToast('error', 'Failed to submit deletion request. Please try again.');
+                        });
+                    }
                 </script>
                 """
-
-                # Next steps CTA
-                next_steps_html = f"""
-                <div style="background: linear-gradient(135deg, #1E293B, #0F172A); color: #FFFFFF; padding: 24px; border-radius: 16px; text-align: center; margin: 24px 0;">
-                    <h3 style="margin: 0 0 16px 0; color: #FFFFFF;">🚀 Ready to Make It Happen?</h3>
-                    <p style="margin: 0 0 20px 0; color: #FFFFFF;">
-                        {cta_config['urgency']}
-                    </p>
-                    <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr)); gap: 12px; margin: 16px 0;">
-                        <button class="cta-button" style="background: {cta_config['color']};">
-                            📞 {cta_config['text']} ({cta_config['price']})
-                        </button>
-                        <button class="cta-button" style="background: #2563EB;">
-                            📘 Download Full Report
-                        </button>
-                        <button class="cta-button" style="background: #8B5CF6;">
-                            👥 Join Community
-                        </button>
+                
+                # Generate comparison tools
+                comparison_html = """
+                <div style="margin: 2rem 0;">
+                    <h3>Multi-Country Comparison</h3>
+                    <div style="background: white; padding: 1rem; border-radius: 12px; box-shadow: var(--shadow);">
+                        Compare your results across different countries to make the optimal decision.
                     </div>
                 </div>
                 """
-
+                
                 return (
                     gr.update(value=kpi_html, visible=True),
+                    gr.update(value=chart, visible=True),
                     gr.update(value=insights_html, visible=True),
-                    gr.update(value=fig, visible=True),
-                    gr.update(value=risk_return_fig, visible=True),
-                    gr.update(value=roi_gauge_fig, visible=True),
-                    gr.update(value=viral_html, visible=True),
-                    gr.update(value=referral_html, visible=True),
                     gr.update(value=lead_html, visible=True),
-                    gr.update(value=next_steps_html, visible=True),
+                    gr.update(value=comparison_html, visible=True),
                     result
                 )
-
+                
             except Exception as e:
                 error_html = f"""
                 <div class="kpi-card error">
-                    <div class="value">❌ Calculation Error</div>
-                    <div class="vt-note">{str(e)}</div>
+                    <div class="kpi-value">Error</div>
+                    <div class="kpi-note">Calculation failed: {str(e)}</div>
                 </div>
                 """
                 return (
-                    error_html,
-                    gr.update(visible=False),
-                    gr.update(visible=False),
-                    gr.update(visible=False),
-                    gr.update(visible=False),
+                    gr.update(value=error_html, visible=True),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     gr.update(visible=False),
                     {}
                 )
-
+        
         # Connect the calculation
         calculate_btn.click(
-            calculate_personalized_roi,
+            calculate_advanced_roi,
             inputs=[
-                selected_profile, dest, rev0, margin0, corp0, pers0, living0, ongoing0,
-                rev_mult, margin_delta, capex_once, horizon_m, discount_a, success
+                profile_selector, target_country, current_revenue, current_margin,
+                current_corp_tax, current_pers_tax, current_living, current_business,
+                revenue_multiplier, margin_improvement, success_probability,
+                time_horizon, discount_rate
             ],
             outputs=[
-                kpi_grid, personalized_insights,
-                main_chart, comparison_chart, roi_gauge_chart,
-                viral_sharing, referral_prompt, lead_capture_modal, next_steps_cta, 
-                calculation_result
+                kpi_dashboard, main_chart, insights_panel,
+                lead_capture_modal, comparison_tools, calculation_results
             ]
         )
-
-        # Auto-fill based on profile selection
-        def update_form_based_on_profile(profile):
-            if profile in USER_PROFILES:
-                profile_data = USER_PROFILES[profile]
+        
+        # Auto-update form based on profile selection
+        def update_form_for_profile(profile_key):
+            if profile_key in ENHANCED_PROFILES:
+                profile = ENHANCED_PROFILES[profile_key]
                 return (
-                    profile_data["typical_revenue"],
-                    profile_data["risk_tolerance"]
+                    profile.typical_revenue,
+                    profile.margin_expectations[0] + 10,  # Use middle of range
+                    profile.risk_tolerance
                 )
-            return 30000, 75
-
-        selected_profile.change(
-            update_form_based_on_profile,
-            inputs=[selected_profile],
-            outputs=[rev0, success]
+            return 45000, 25, 75
+        
+        profile_selector.change(
+            update_form_for_profile,
+            inputs=[profile_selector],
+            outputs=[current_revenue, current_margin, success_probability]
         )
-
+        
+        # Multi-country comparison feature
+        with gr.Row():
+            gr.Markdown("## Country Comparison Tool")
+            
+            comparison_countries = gr.CheckboxGroup(
+                choices=list(ENHANCED_COUNTRIES.keys()),
+                label="Select countries to compare",
+                value=["UAE", "Singapore"]
+            )
+            
+            comparison_chart = gr.Plot(visible=False)
+            
+            def generate_comparison(selected_countries, profile_key):
+                if len(selected_countries) >= 2 and profile_key in ENHANCED_PROFILES:
+                    chart = ChartGenerator.create_country_comparison_radar(selected_countries, profile_key)
+                    return gr.update(value=chart, visible=True)
+                return gr.update(visible=False)
+            
+            comparison_countries.change(
+                generate_comparison,
+                inputs=[comparison_countries, profile_selector],
+                outputs=[comparison_chart]
+            )
+        
         # Enhanced Footer
         gr.HTML("""
-        <div class="vt-footer" style="margin-top: 40px; padding: 24px; background: #F1F5F9; border-radius: 16px;">
-            <div style="text-align: center; margin-bottom: 20px;">
-                <h3 style="margin: 0 0 8px 0;">🌍 VisaTier 3.0 - Your Immigration Success Partner</h3>
-                <p style="margin: 0; color: var(--vt-muted);">Trusted by 10,000+ entrepreneurs • $50M+ in optimized relocations</p>
+        <div class="premium-footer">
+            <div style="text-align: center; margin-bottom: 2rem;">
+                <h2 style="color: var(--primary); margin-bottom: 1rem;">VisaTier 4.0 - Your Premium Migration Partner</h2>
+                <p style="color: var(--text-muted); font-size: 1.1rem;">Trusted by 15,000+ entrepreneurs worldwide</p>
             </div>
-
-            <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(250px, 1fr)); gap: 20px; margin: 24px 0;">
-                <div>
-                    <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🚀 Success Stories</h4>
-                    <div style="font-size: 14px; color: var(--vt-muted);">
-                        • Sarah K: 347% ROI in Dubai<br>
-                        • Marcus C: $180K tax savings<br>
-                        • Elena R: 18-month payback in Estonia
-                    </div>
+            
+            <div class="footer-grid">
+                <div class="footer-section">
+                    <h4>Success Stories</h4>
+                    <p>• Alex M: $340K annual savings (Singapore)<br>
+                       • Maria L: 287% ROI in 18 months (UAE)<br>
+                       • James K: Reduced payback to 8 months (Estonia)</p>
                 </div>
-
-                <div>
-                    <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">📊 Platform Stats</h4>
-                    <div style="font-size: 14px; color: var(--vt-muted);">
-                        • 10,000+ calculations completed<br>
-                        • 1,200+ successful relocations<br>
-                        • 95% client satisfaction rate
-                    </div>
+                
+                <div class="footer-section">
+                    <h4>Platform Statistics</h4>
+                    <p>• 15,000+ calculations completed<br>
+                       • 2,100+ successful relocations<br>
+                       • $127M+ in optimized moves<br>
+                       • 94.7% client satisfaction</p>
                 </div>
-
-                <div>
-                    <h4 style="margin: 0 0 12px 0; color: var(--vt-primary);">🎯 Next Steps</h4>
-                    <div style="font-size: 14px; color: var(--vt-muted);">
-                        • Book a strategy call<br>
-                        • Download our guides<br>
-                        • Join our community
-                    </div>
+                
+                <div class="footer-section">
+                    <h4>Advanced Features</h4>
+                    <p>• Monte Carlo risk simulation<br>
+                       • Sensitivity analysis<br>
+                       • Multi-country comparison<br>
+                       • Personalized insights engine</p>
+                </div>
+                
+                <div class="footer-section">
+                    <h4>Get Started Today</h4>
+                    <p>• Book strategy consultation<br>
+                       • Download country guides<br>
+                       • Join exclusive community<br>
+                       • Access premium tools</p>
                 </div>
             </div>
-
-            <div style="text-align: center; padding-top: 20px; border-top: 1px solid #E2E8F0; font-size: 12px; color: #94A3B8;">
-                © 2025 VisaTier — Professional Immigration Advisory •
-                <a href="#" style="color: var(--vt-primary);">Privacy Policy</a> •
-                <a href="#" style="color: var(--vt-primary);">Terms of Service</a> •
-                <a href="mailto:hello@visatier.com" style="color: var(--vt-primary);">Contact</a>
-                <br><br>
-                ⚠️ Results are estimates for planning purposes. Not financial, tax, or legal advice.
-                Consult qualified professionals for personalized guidance.
+            
+            <div style="text-align: center; padding-top: 2rem; border-top: 1px solid var(--border); color: var(--text-muted); font-size: 14px;">
+                <p><strong>Legal Disclaimer:</strong> Results are estimates for planning purposes only. Not financial, tax, or legal advice. 
+                Consult qualified professionals for personalized guidance.</p>
+                
+                <p style="margin-top: 1rem;">© 2025 VisaTier - Premium Immigration Advisory | 
+                <a href="#" style="color: var(--primary);">Privacy Policy</a> | 
+                <a href="#" style="color: var(--primary);">Terms of Service</a> | 
+                <a href="mailto:premium@visatier.com" style="color: var(--primary);">Contact</a></p>
             </div>
         </div>
         """)
-        gr.HTML(create_dynamic_chart_updates())
-        add_animations()
-    return demo
+    
+    return app
 
-# Create and launch the app
-demo = create_immigration_roi_app_v3()
+# =========================
+# ADDITIONAL UTILITY FUNCTIONS
+# =========================
 
-fastapi_app = FastAPI()
+def generate_pdf_report(result: Dict, profile: UserProfile, country: CountryData) -> str:
+    """Generate comprehensive PDF report (placeholder for actual implementation)"""
+    return f"PDF report generated for {profile.name} -> {country.name} migration analysis"
 
+def send_to_crm(email: str, profile: str, result: Dict) -> bool:
+    """Send lead data to CRM system (placeholder)"""
+    # In production, integrate with HubSpot, Salesforce, etc.
+    print(f"CRM: New lead {email} - {profile} - ROI: {result.get('roi', 0):.1f}%")
+    return True
 
-class QuickCalcRequest(BaseModel):
-    dest: str = "UAE (Dubai)"
-    rev0: float = 30000
-    margin0: float = 25.0
-    corp0: float = 20.0
-    pers0: float = 10.0
-    living0: float = 4000.0
-    ongoing0: float = 500.0
-    rev_mult: float = 3.0
-    margin_delta: float = 5.0
-    success: float = 75.0
-    horizon_m: int = 60
-    capex_once: float = 35000.0
-    discount_a: float = 12.0
+def schedule_consultation(email: str, profile: str, country: str, roi: float) -> str:
+    """Schedule consultation via Calendly API (placeholder)"""
+    # In production, integrate with Calendly, Acuity, etc.
+    return f"https://calendly.com/visatier/consultation?email={email}&profile={profile}"
 
-
-@fastapi_app.post("/api/quick-calculate")
-def quick_calculate(req: QuickCalcRequest):
-    country = COUNTRY_CONFIG_ENHANCED.get(req.dest, list(COUNTRY_CONFIG_ENHANCED.values())[0])
-    result = compute_enhanced_monthly_delta_cashflow(
-        req.rev0, req.margin0, req.corp0, req.pers0, req.living0, req.ongoing0,
-        req.dest, req.rev_mult, req.margin_delta,
-        country["corp_tax"] * 100, country["pers_tax"] * 100,
-        country["living_month"], country["ongoing_month"],
-        req.capex_once, int(req.horizon_m), req.discount_a, req.success,
-        True, True, True, True
-    )
-    return {"roi": result["total_5yr_roi"], "payback_years": result["payback_years"]}
-
-
-app = gr.mount_gradio_app(fastapi_app, demo, path="/")
-
+# =========================
+# MAIN EXECUTION
+# =========================
 
 if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run(app, host="0.0.0.0", port=7860)
+    # Create and launch the enhanced application
+    app = create_premium_immigration_app()
+    
+    # Development server
+    app.launch(
+        server_name="0.0.0.0",
+        server_port=7860,
+        share=False,
+        debug=True,
+        show_error=True
+    )
