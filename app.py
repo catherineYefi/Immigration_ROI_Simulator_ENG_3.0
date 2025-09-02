@@ -39,14 +39,12 @@ PREMIUM_CSS = """
     --shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.1);
     --gradient: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
 }
-
 /* Global Styles */
 .gradio-container {
     max-width: 1400px !important;
     margin: 0 auto !important;
     font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, sans-serif !important;
 }
-
 /* Header Component */
 .premium-header {
     background: var(--gradient);
@@ -57,7 +55,6 @@ PREMIUM_CSS = """
     position: relative;
     overflow: hidden;
 }
-
 .premium-header::before {
     content: '';
     position: absolute;
@@ -68,12 +65,10 @@ PREMIUM_CSS = """
     background: radial-gradient(circle, rgba(255,255,255,0.1) 0%, transparent 70%);
     animation: float 6s ease-in-out infinite;
 }
-
 @keyframes float {
     0%, 100% { transform: translateY(0px) rotate(0deg); }
     50% { transform: translateY(-20px) rotate(180deg); }
 }
-
 .header-content {
     position: relative;
     z-index: 2;
@@ -83,24 +78,20 @@ PREMIUM_CSS = """
     flex-wrap: wrap;
     gap: 1rem;
 }
-
 .header-title {
     font-size: 2rem;
     font-weight: 800;
     margin-bottom: 0.5rem;
 }
-
 .header-subtitle {
     opacity: 0.9;
     font-size: 1.1rem;
 }
-
 .header-stats {
     text-align: right;
     font-size: 0.9rem;
     opacity: 0.8;
 }
-
 /* Profile Selection Cards */
 .profile-grid {
     display: grid;
@@ -108,7 +99,6 @@ PREMIUM_CSS = """
     gap: 1rem;
     margin: 1.5rem 0;
 }
-
 .profile-card {
     background: var(--surface);
     border: 2px solid var(--border);
@@ -120,7 +110,6 @@ PREMIUM_CSS = """
     position: relative;
     overflow: hidden;
 }
-
 .profile-card::before {
     content: '';
     position: absolute;
@@ -131,40 +120,33 @@ PREMIUM_CSS = """
     background: linear-gradient(90deg, transparent, rgba(255,255,255,0.4), transparent);
     transition: left 0.5s;
 }
-
 .profile-card:hover::before {
     left: 100%;
 }
-
 .profile-card:hover {
     border-color: var(--primary);
     transform: translateY(-2px);
     box-shadow: var(--shadow);
 }
-
 .profile-card.selected {
     border-color: var(--primary);
     background: linear-gradient(135deg, var(--primary) 0%, var(--primary-dark) 100%);
     color: white;
 }
-
 .profile-icon {
     font-size: 2.5rem;
     margin-bottom: 1rem;
     display: block;
 }
-
 .profile-name {
     font-weight: 600;
     font-size: 1.1rem;
     margin-bottom: 0.5rem;
 }
-
 .profile-revenue {
     font-size: 0.9rem;
     opacity: 0.8;
 }
-
 /* KPI Cards */
 .kpi-grid {
     display: grid;
@@ -172,7 +154,6 @@ PREMIUM_CSS = """
     gap: 1.5rem;
     margin: 2rem 0;
 }
-
 .kpi-card {
     background: var(--surface);
     border-radius: var(--radius);
@@ -182,7 +163,6 @@ PREMIUM_CSS = """
     position: relative;
     overflow: hidden;
 }
-
 .kpi-card::before {
     content: '';
     position: absolute;
@@ -192,38 +172,32 @@ PREMIUM_CSS = """
     height: 4px;
     background: var(--gradient);
 }
-
 .kpi-label {
     font-size: 0.9rem;
     color: var(--text-muted);
     margin-bottom: 0.5rem;
     font-weight: 500;
 }
-
 .kpi-value {
     font-size: 2rem;
     font-weight: 800;
     color: var(--primary);
     margin-bottom: 0.5rem;
 }
-
 .kpi-note {
     font-size: 0.8rem;
     color: var(--text-muted);
     line-height: 1.4;
 }
-
 .kpi-card.success .kpi-value { color: var(--success); }
 .kpi-card.warning .kpi-value { color: var(--warning); }
 .kpi-card.error .kpi-value { color: var(--error); }
-
 /* Insight Cards */
 .insights-grid {
     display: grid;
     gap: 1rem;
     margin: 1.5rem 0;
 }
-
 .insight-card {
     background: var(--surface);
     border-left: 4px solid var(--primary);
@@ -232,34 +206,28 @@ PREMIUM_CSS = """
     box-shadow: var(--shadow);
     transition: transform 0.2s ease;
 }
-
 .insight-card:hover {
     transform: translateX(4px);
 }
-
 .insight-header {
     display: flex;
     align-items: center;
     margin-bottom: 1rem;
 }
-
 .insight-icon {
     font-size: 1.5rem;
     margin-right: 0.75rem;
 }
-
 .insight-title {
     font-weight: 600;
     font-size: 1.1rem;
     margin: 0;
 }
-
 .insight-description {
     color: var(--text-muted);
     line-height: 1.5;
     margin-bottom: 1rem;
 }
-
 /* CTA Buttons */
 .cta-button {
     background: var(--gradient) !important;
@@ -274,16 +242,13 @@ PREMIUM_CSS = """
     text-decoration: none !important;
     display: inline-block !important;
 }
-
 .cta-button:hover {
     transform: translateY(-2px) !important;
     box-shadow: 0 10px 20px rgba(37, 99, 235, 0.3) !important;
 }
-
 .cta-button:active {
     transform: translateY(0) !important;
 }
-
 /* Progress Bar */
 .progress-container {
     background: var(--border);
@@ -292,14 +257,12 @@ PREMIUM_CSS = """
     margin: 1rem 0;
     overflow: hidden;
 }
-
 .progress-bar {
     height: 100%;
     background: var(--gradient);
     border-radius: 50px;
     transition: width 0.5s ease;
 }
-
 /* Testimonial */
 .testimonial {
     background: var(--surface-alt);
@@ -309,7 +272,6 @@ PREMIUM_CSS = """
     margin: 2rem 0;
     position: relative;
 }
-
 .testimonial::before {
     content: '"';
     font-size: 4rem;
@@ -319,7 +281,6 @@ PREMIUM_CSS = """
     left: 1rem;
     font-family: serif;
 }
-
 .testimonial-text {
     font-style: italic;
     font-size: 1.1rem;
@@ -327,12 +288,10 @@ PREMIUM_CSS = """
     margin-bottom: 1rem;
     color: var(--text);
 }
-
 .testimonial-author {
     font-weight: 600;
     color: var(--primary);
 }
-
 /* Lead Capture Modal */
 .lead-modal {
     background: var(--surface);
@@ -342,12 +301,10 @@ PREMIUM_CSS = """
     margin: 2rem 0;
     border: 1px solid var(--border);
 }
-
 .lead-modal h3 {
     color: var(--primary);
     margin-bottom: 1rem;
 }
-
 .value-badge {
     background: var(--success);
     color: white;
@@ -357,7 +314,6 @@ PREMIUM_CSS = """
     font-weight: 600;
     margin-bottom: 1rem;
 }
-
 .urgency-text {
     background: var(--warning);
     color: white;
@@ -367,7 +323,6 @@ PREMIUM_CSS = """
     margin-bottom: 1rem;
     text-align: center;
 }
-
 /* Form Elements */
 .form-input {
     width: 100%;
@@ -378,13 +333,11 @@ PREMIUM_CSS = """
     transition: border-color 0.2s ease;
     margin-bottom: 1rem;
 }
-
 .form-input:focus {
     outline: none;
     border-color: var(--primary);
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
-
 /* Responsive Design */
 @media (max-width: 768px) {
     .header-content {
@@ -404,26 +357,21 @@ PREMIUM_CSS = """
         font-size: 1.5rem;
     }
 }
-
 /* Animation Classes */
 .fadeIn {
     animation: fadeIn 0.5s ease-in;
 }
-
 @keyframes fadeIn {
     from { opacity: 0; transform: translateY(20px); }
     to { opacity: 1; transform: translateY(0); }
 }
-
 .slideUp {
     animation: slideUp 0.3s ease-out;
 }
-
 @keyframes slideUp {
     from { transform: translateY(100%); opacity: 0; }
     to { transform: translateY(0); opacity: 1; }
 }
-
 /* Country Comparison Table */
 .comparison-table {
     background: var(--surface);
@@ -432,7 +380,6 @@ PREMIUM_CSS = """
     box-shadow: var(--shadow);
     margin: 1rem 0;
 }
-
 /* Footer */
 .premium-footer {
     background: var(--surface-alt);
@@ -441,26 +388,22 @@ PREMIUM_CSS = """
     margin-top: 3rem;
     border-top: 1px solid var(--border);
 }
-
 .footer-grid {
     display: grid;
     grid-template-columns: repeat(auto-fit, minmax(250px, 1fr));
     gap: 2rem;
     margin-bottom: 2rem;
 }
-
 .footer-section h4 {
     color: var(--primary);
     margin-bottom: 1rem;
     font-weight: 600;
 }
-
 .footer-section p {
     color: var(--text-muted);
     line-height: 1.5;
     font-size: 0.9rem;
 }
-
 /* Notifications */
 .notification-toast {
     position: fixed;
@@ -474,7 +417,6 @@ PREMIUM_CSS = """
     z-index: 1000;
     animation: slideIn 0.3s ease;
 }
-
 @keyframes slideIn {
     from { transform: translateX(100%); }
     to { transform: translateX(0); }
@@ -1609,9 +1551,9 @@ def create_premium_immigration_app():
                 </div>
                 
                 <script>
-                function requestDataDeletion() {
+                function requestDataDeletion() {{
                     alert('Data deletion request recorded. We will process within 30 days per GDPR requirements.');
-                }
+                }}
                 </script>
                 """
                 
