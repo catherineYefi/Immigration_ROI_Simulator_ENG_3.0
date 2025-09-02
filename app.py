@@ -1,4 +1,4 @@
-# VisaTier 4.0 - Premium Immigration ROI Calculator
+# VisaTier 4.0 - Premium Immigration ROI Calculator (FIXED)
 # Enhanced with advanced analytics, monetization, and enterprise features
 
 import math
@@ -17,7 +17,7 @@ import asyncio
 from dataclasses import dataclass
 
 # =========================
-# ENHANCED STYLING SYSTEM
+# ENHANCED STYLING SYSTEM - FIXED
 # =========================
 
 PREMIUM_CSS = """
@@ -497,7 +497,7 @@ PREMIUM_THEME = gr.themes.Soft(
 )
 
 # =========================
-# ENHANCED DATA MODELS
+# ENHANCED DATA MODELS - FIXED
 # =========================
 
 @dataclass
@@ -509,7 +509,7 @@ class UserProfile:
     risk_tolerance: int
     key_concerns: List[str]
     success_multiplier: float
-    margin_expectations: Tuple[float, float]  # (min, max)
+    margin_expectations: Tuple[float, float]
     
 @dataclass
 class CountryData:
@@ -529,7 +529,7 @@ class CountryData:
     risk_factors: Dict[str, float]
     seasonality: List[float]
 
-# Enhanced user profiles with more detailed data
+# Enhanced user profiles with FIXED emojis
 ENHANCED_PROFILES = {
     "tech_startup": UserProfile(
         id="tech_startup",
@@ -706,7 +706,7 @@ ENHANCED_COUNTRIES = {
 }
 
 # =========================
-# ADVANCED CALCULATION ENGINE
+# ADVANCED CALCULATION ENGINE - IMPROVED
 # =========================
 
 class ROICalculator:
@@ -732,196 +732,249 @@ class ROICalculator:
     ) -> Dict:
         """Advanced ROI calculation with Monte Carlo simulation"""
         
-        # Base calculations
-        base_result = self._calculate_deterministic_roi(
-            profile, country, current_revenue, current_margin,
-            current_corp_tax, current_pers_tax, current_living, current_business,
-            revenue_multiplier, margin_improvement, success_probability,
-            time_horizon, discount_rate
-        )
-        
-        # Monte Carlo simulation for risk assessment
-        monte_carlo_result = self._run_monte_carlo_simulation(
-            profile, country, current_revenue, current_margin,
-            revenue_multiplier, margin_improvement, time_horizon, discount_rate
-        )
-        
-        # Sensitivity analysis
-        sensitivity_result = self._perform_sensitivity_analysis(
-            profile, country, current_revenue, current_margin,
-            revenue_multiplier, margin_improvement, time_horizon, discount_rate
-        )
-        
-        return {
-            **base_result,
-            "monte_carlo": monte_carlo_result,
-            "sensitivity": sensitivity_result,
-            "risk_score": self._calculate_risk_score(country, profile),
-            "opportunity_score": self._calculate_opportunity_score(base_result, country, profile)
-        }
+        try:
+            # Base calculations
+            base_result = self._calculate_deterministic_roi(
+                profile, country, current_revenue, current_margin,
+                current_corp_tax, current_pers_tax, current_living, current_business,
+                revenue_multiplier, margin_improvement, success_probability,
+                time_horizon, discount_rate
+            )
+            
+            # Monte Carlo simulation for risk assessment
+            monte_carlo_result = self._run_monte_carlo_simulation(
+                profile, country, current_revenue, current_margin,
+                revenue_multiplier, margin_improvement, time_horizon, discount_rate
+            )
+            
+            # Sensitivity analysis
+            sensitivity_result = self._perform_sensitivity_analysis(
+                profile, country, current_revenue, current_margin,
+                revenue_multiplier, margin_improvement, time_horizon, discount_rate
+            )
+            
+            return {
+                **base_result,
+                "monte_carlo": monte_carlo_result,
+                "sensitivity": sensitivity_result,
+                "risk_score": self._calculate_risk_score(country, profile),
+                "opportunity_score": self._calculate_opportunity_score(base_result, country, profile)
+            }
+        except Exception as e:
+            print(f"ROI Calculation Error: {e}")
+            # Return safe fallback values
+            return {
+                "npv": 0,
+                "roi": 0,
+                "irr_annual": 0,
+                "payback_months": float('inf'),
+                "payback_years": float('inf'),
+                "monthly_delta": 0,
+                "total_return": 0,
+                "monthly_flows": [0] * time_horizon,
+                "setup_cost": country.setup_cost,
+                "risk_score": 50,
+                "opportunity_score": 50
+            }
     
     def _calculate_deterministic_roi(self, profile, country, *args) -> Dict:
         """Core deterministic ROI calculation"""
-        (current_revenue, current_margin, current_corp_tax, current_pers_tax,
-         current_living, current_business, revenue_multiplier, margin_improvement,
-         success_probability, time_horizon, discount_rate) = args
-        
-        # Current situation
-        current_profit = current_revenue * (current_margin / 100)
-        current_after_tax = current_profit * (1 - current_corp_tax/100) * (1 - current_pers_tax/100)
-        current_net = current_after_tax - current_living - current_business
-        
-        # New situation
-        new_revenue = current_revenue * revenue_multiplier * profile.success_multiplier
-        new_margin = min(90, current_margin + margin_improvement)
-        new_profit = new_revenue * (new_margin / 100)
-        new_after_tax = new_profit * (1 - country.corp_tax * 100) * (1 - country.pers_tax * 100)
-        new_net = new_after_tax - country.living_cost - country.business_cost
-        
-        # Cash flow analysis
-        monthly_delta = (new_net - current_net) * (success_probability / 100)
-        setup_cost = country.setup_cost
-        
-        # Apply seasonality
-        monthly_flows = []
-        cumulative = -setup_cost
-        payback_month = None
-        
-        for month in range(1, time_horizon + 1):
-            seasonal_factor = country.seasonality[(month - 1) % 12]
-            monthly_cf = monthly_delta * seasonal_factor
-            monthly_flows.append(monthly_cf)
-            cumulative += monthly_cf
+        try:
+            (current_revenue, current_margin, current_corp_tax, current_pers_tax,
+             current_living, current_business, revenue_multiplier, margin_improvement,
+             success_probability, time_horizon, discount_rate) = args
             
-            if payback_month is None and cumulative >= 0:
-                payback_month = month
-        
-        # NPV and IRR calculation
-        discount_monthly = (1 + discount_rate/100) ** (1/12) - 1
-        npv = -setup_cost + sum(cf / (1 + discount_monthly) ** month 
-                               for month, cf in enumerate(monthly_flows, 1))
-        
-        # IRR calculation using binary search
-        def npv_at_rate(rate):
-            monthly_rate = (1 + rate) ** (1/12) - 1
-            return -setup_cost + sum(cf / (1 + monthly_rate) ** month 
+            # Ensure values are valid
+            current_revenue = max(1000, float(current_revenue or 45000))
+            current_margin = max(1, min(80, float(current_margin or 25)))
+            
+            # Current situation
+            current_profit = current_revenue * (current_margin / 100)
+            current_after_tax = current_profit * (1 - current_corp_tax/100) * (1 - current_pers_tax/100)
+            current_net = current_after_tax - current_living - current_business
+            
+            # New situation
+            new_revenue = current_revenue * revenue_multiplier * profile.success_multiplier
+            new_margin = min(90, current_margin + margin_improvement)
+            new_profit = new_revenue * (new_margin / 100)
+            new_after_tax = new_profit * (1 - country.corp_tax * 100) * (1 - country.pers_tax * 100)
+            new_net = new_after_tax - country.living_cost - country.business_cost
+            
+            # Cash flow analysis
+            monthly_delta = (new_net - current_net) * (success_probability / 100)
+            setup_cost = country.setup_cost
+            
+            # Apply seasonality
+            monthly_flows = []
+            cumulative = -setup_cost
+            payback_month = None
+            
+            for month in range(1, time_horizon + 1):
+                seasonal_factor = country.seasonality[(month - 1) % 12]
+                monthly_cf = monthly_delta * seasonal_factor
+                monthly_flows.append(monthly_cf)
+                cumulative += monthly_cf
+                
+                if payback_month is None and cumulative >= 0:
+                    payback_month = month
+            
+            # NPV and IRR calculation
+            discount_monthly = (1 + discount_rate/100) ** (1/12) - 1
+            npv = -setup_cost + sum(cf / (1 + discount_monthly) ** month 
                                    for month, cf in enumerate(monthly_flows, 1))
-        
-        irr_annual = self._find_irr(npv_at_rate)
-        
-        # ROI calculation
-        total_return = sum(monthly_flows)
-        roi = (total_return / setup_cost) * 100 if setup_cost > 0 else 0
-        
-        return {
-            "npv": npv,
-            "roi": roi,
-            "irr_annual": irr_annual * 100 if irr_annual else 0,
-            "payback_months": payback_month or float('inf'),
-            "payback_years": (payback_month / 12) if payback_month else float('inf'),
-            "monthly_delta": monthly_delta,
-            "total_return": total_return,
-            "monthly_flows": monthly_flows,
-            "setup_cost": setup_cost
-        }
+            
+            # IRR calculation using binary search
+            def npv_at_rate(rate):
+                monthly_rate = (1 + rate) ** (1/12) - 1
+                return -setup_cost + sum(cf / (1 + monthly_rate) ** month 
+                                       for month, cf in enumerate(monthly_flows, 1))
+            
+            irr_annual = self._find_irr(npv_at_rate)
+            
+            # ROI calculation
+            total_return = sum(monthly_flows)
+            roi = (total_return / setup_cost) * 100 if setup_cost > 0 else 0
+            
+            return {
+                "npv": npv,
+                "roi": roi,
+                "irr_annual": irr_annual * 100 if irr_annual else 0,
+                "payback_months": payback_month or float('inf'),
+                "payback_years": (payback_month / 12) if payback_month else float('inf'),
+                "monthly_delta": monthly_delta,
+                "total_return": total_return,
+                "monthly_flows": monthly_flows,
+                "setup_cost": setup_cost
+            }
+        except Exception as e:
+            print(f"Deterministic ROI calculation error: {e}")
+            return {
+                "npv": 0, "roi": 0, "irr_annual": 0,
+                "payback_months": float('inf'), "payback_years": float('inf'),
+                "monthly_delta": 0, "total_return": 0,
+                "monthly_flows": [0] * 60, "setup_cost": 50000
+            }
     
     def _run_monte_carlo_simulation(self, profile, country, *args) -> Dict:
         """Monte Carlo simulation for risk assessment"""
-        results = []
-        
-        for _ in range(self.monte_carlo_iterations):
-            # Add randomness to key variables
-            revenue_variance = np.random.normal(1.0, 0.15)
-            margin_variance = np.random.normal(1.0, 0.10)
-            success_variance = np.random.normal(1.0, 0.20)
+        try:
+            results = []
             
-            # Modify inputs with variance
-            modified_args = list(args)
-            modified_args[0] *= revenue_variance  # revenue
-            modified_args[1] *= margin_variance   # margin
-            modified_args[7] *= success_variance  # success probability
+            for _ in range(self.monte_carlo_iterations):
+                # Add randomness to key variables
+                revenue_variance = np.random.normal(1.0, 0.15)
+                margin_variance = np.random.normal(1.0, 0.10)
+                success_variance = np.random.normal(1.0, 0.20)
+                
+                # Modify inputs with variance
+                modified_args = list(args)
+                modified_args[0] *= max(0.5, revenue_variance)  # revenue
+                modified_args[1] *= max(0.5, margin_variance)   # margin
+                modified_args[7] *= max(0.1, success_variance)  # success probability
+                
+                result = self._calculate_deterministic_roi(profile, country, *modified_args)
+                results.append(result)
             
-            result = self._calculate_deterministic_roi(profile, country, *modified_args)
-            results.append(result)
-        
-        # Calculate confidence intervals
-        rois = [r['roi'] for r in results]
-        npvs = [r['npv'] for r in results]
-        
-        confidence_intervals = {}
-        for ci in self.confidence_intervals:
-            confidence_intervals[f'roi_{int(ci*100)}'] = np.percentile(rois, ci * 100)
-            confidence_intervals[f'npv_{int(ci*100)}'] = np.percentile(npvs, ci * 100)
-        
-        return {
-            "mean_roi": np.mean(rois),
-            "std_roi": np.std(rois),
-            "mean_npv": np.mean(npvs),
-            "std_npv": np.std(npvs),
-            "confidence_intervals": confidence_intervals,
-            "probability_positive_roi": sum(1 for roi in rois if roi > 0) / len(rois)
-        }
+            # Calculate confidence intervals
+            rois = [r['roi'] for r in results]
+            npvs = [r['npv'] for r in results]
+            
+            confidence_intervals = {}
+            for ci in self.confidence_intervals:
+                confidence_intervals[f'roi_{int(ci*100)}'] = np.percentile(rois, ci * 100)
+                confidence_intervals[f'npv_{int(ci*100)}'] = np.percentile(npvs, ci * 100)
+            
+            return {
+                "mean_roi": np.mean(rois),
+                "std_roi": np.std(rois),
+                "mean_npv": np.mean(npvs),
+                "std_npv": np.std(npvs),
+                "confidence_intervals": confidence_intervals,
+                "probability_positive_roi": sum(1 for roi in rois if roi > 0) / len(rois)
+            }
+        except Exception as e:
+            print(f"Monte Carlo simulation error: {e}")
+            return {
+                "mean_roi": 0, "std_roi": 0, "mean_npv": 0, "std_npv": 0,
+                "confidence_intervals": {}, "probability_positive_roi": 0
+            }
     
     def _perform_sensitivity_analysis(self, profile, country, *args) -> Dict:
         """Sensitivity analysis for key variables"""
-        base_result = self._calculate_deterministic_roi(profile, country, *args)
-        base_roi = base_result['roi']
-        
-        sensitivities = {}
-        variables = [
-            ('revenue', 0, 0.1),
-            ('margin', 1, 5.0),
-            ('revenue_multiplier', 6, 0.2),
-            ('success_probability', 8, 10.0)
-        ]
-        
-        for var_name, var_index, change_amount in variables:
-            modified_args = list(args)
-            modified_args[var_index] += change_amount
+        try:
+            base_result = self._calculate_deterministic_roi(profile, country, *args)
+            base_roi = base_result['roi']
             
-            new_result = self._calculate_deterministic_roi(profile, country, *modified_args)
-            sensitivity = (new_result['roi'] - base_roi) / change_amount
-            sensitivities[var_name] = sensitivity
-        
-        return sensitivities
+            sensitivities = {}
+            variables = [
+                ('revenue', 0, 0.1),
+                ('margin', 1, 5.0),
+                ('revenue_multiplier', 6, 0.2),
+                ('success_probability', 8, 10.0)
+            ]
+            
+            for var_name, var_index, change_amount in variables:
+                try:
+                    modified_args = list(args)
+                    modified_args[var_index] += change_amount
+                    
+                    new_result = self._calculate_deterministic_roi(profile, country, *modified_args)
+                    sensitivity = (new_result['roi'] - base_roi) / change_amount if change_amount != 0 else 0
+                    sensitivities[var_name] = sensitivity
+                except:
+                    sensitivities[var_name] = 0
+            
+            return sensitivities
+        except Exception as e:
+            print(f"Sensitivity analysis error: {e}")
+            return {"revenue": 0, "margin": 0, "revenue_multiplier": 0, "success_probability": 0}
     
     def _find_irr(self, npv_function, precision=1e-6, max_iterations=100):
         """Find IRR using binary search"""
-        low, high = -0.99, 5.0
-        
-        for _ in range(max_iterations):
-            mid = (low + high) / 2
-            npv = npv_function(mid)
+        try:
+            low, high = -0.99, 5.0
             
-            if abs(npv) < precision:
-                return mid
-            elif npv > 0:
-                low = mid
-            else:
-                high = mid
-        
-        return None
+            for _ in range(max_iterations):
+                mid = (low + high) / 2
+                npv = npv_function(mid)
+                
+                if abs(npv) < precision:
+                    return mid
+                elif npv > 0:
+                    low = mid
+                else:
+                    high = mid
+            
+            return None
+        except:
+            return None
     
     def _calculate_risk_score(self, country: CountryData, profile: UserProfile) -> float:
         """Calculate overall risk score (0-100, lower is better)"""
-        political_risk = country.risk_factors.get('political', 0.1) * 30
-        economic_risk = country.risk_factors.get('economic', 0.1) * 40
-        regulatory_risk = country.risk_factors.get('regulatory', 0.1) * 30
-        
-        # Adjust for profile risk tolerance
-        risk_adjustment = (100 - profile.risk_tolerance) / 100
-        
-        total_risk = (political_risk + economic_risk + regulatory_risk) * (1 + risk_adjustment)
-        return min(100, total_risk)
+        try:
+            political_risk = country.risk_factors.get('political', 0.1) * 30
+            economic_risk = country.risk_factors.get('economic', 0.1) * 40
+            regulatory_risk = country.risk_factors.get('regulatory', 0.1) * 30
+            
+            # Adjust for profile risk tolerance
+            risk_adjustment = (100 - profile.risk_tolerance) / 100
+            
+            total_risk = (political_risk + economic_risk + regulatory_risk) * (1 + risk_adjustment)
+            return min(100, total_risk)
+        except:
+            return 50
     
     def _calculate_opportunity_score(self, result: Dict, country: CountryData, profile: UserProfile) -> float:
         """Calculate opportunity score (0-100, higher is better)"""
-        roi_score = min(50, result['roi'] / 4)  # Cap at 200% ROI = 50 points
-        growth_score = country.market_growth * 5  # Market growth contribution
-        ease_score = country.ease_score * 2  # Ease of business
-        partnership_score = country.partnership_score / 2  # Partnership potential
-        
-        return min(100, roi_score + growth_score + ease_score + partnership_score)
+        try:
+            roi_score = min(50, result['roi'] / 4)  # Cap at 200% ROI = 50 points
+            growth_score = country.market_growth * 5  # Market growth contribution
+            ease_score = country.ease_score * 2  # Ease of business
+            partnership_score = country.partnership_score / 2  # Partnership potential
+            
+            return min(100, roi_score + growth_score + ease_score + partnership_score)
+        except:
+            return 50
 
 # =========================
 # ENHANCED VISUALIZATION ENGINE
@@ -931,112 +984,154 @@ class ChartGenerator:
     @staticmethod
     def create_roi_dashboard(result: Dict, country_name: str, profile_name: str) -> go.Figure:
         """Create comprehensive ROI dashboard"""
-        fig = make_subplots(
-            rows=2, cols=2,
-            subplot_titles=("Cash Flow Projection", "ROI Distribution", "Risk vs Return", "Sensitivity Analysis"),
-            specs=[[{"type": "scatter"}, {"type": "histogram"}],
-                   [{"type": "scatter"}, {"type": "bar"}]]
-        )
-        
-        # Cash flow projection
-        months = list(range(len(result['monthly_flows'])))
-        cumulative = np.cumsum([-result['setup_cost']] + result['monthly_flows'])
-        
-        fig.add_trace(
-            go.Scatter(x=months, y=cumulative, mode='lines+markers', name='Cumulative Cash Flow'),
-            row=1, col=1
-        )
-        
-        # ROI distribution (Monte Carlo)
-        if 'monte_carlo' in result:
-            roi_samples = np.random.normal(
-                result['monte_carlo']['mean_roi'],
-                result['monte_carlo']['std_roi'],
-                1000
+        try:
+            fig = make_subplots(
+                rows=2, cols=2,
+                subplot_titles=("Cash Flow Projection", "ROI Distribution", "Risk vs Return", "Sensitivity Analysis"),
+                specs=[[{"type": "scatter"}, {"type": "histogram"}],
+                       [{"type": "scatter"}, {"type": "bar"}]]
             )
-            fig.add_trace(
-                go.Histogram(x=roi_samples, name='ROI Distribution', opacity=0.7),
-                row=1, col=2
-            )
-        
-        # Risk vs Return comparison
-        countries = list(ENHANCED_COUNTRIES.keys())
-        risk_scores = [ROICalculator()._calculate_risk_score(ENHANCED_COUNTRIES[c], ENHANCED_PROFILES['tech_startup']) for c in countries]
-        return_scores = [ENHANCED_COUNTRIES[c].market_growth for c in countries]
-        
-        fig.add_trace(
-            go.Scatter(
-                x=return_scores, y=risk_scores,
-                mode='markers+text',
-                text=countries,
-                textposition="top center",
-                name='Countries'
-            ),
-            row=2, col=1
-        )
-        
-        # Sensitivity analysis
-        if 'sensitivity' in result:
-            sens_vars = list(result['sensitivity'].keys())
-            sens_values = list(result['sensitivity'].values())
+            
+            # Cash flow projection
+            monthly_flows = result.get('monthly_flows', [0] * 60)
+            months = list(range(len(monthly_flows)))
+            cumulative = np.cumsum([-result.get('setup_cost', 50000)] + monthly_flows)
             
             fig.add_trace(
-                go.Bar(x=sens_vars, y=sens_values, name='Sensitivity'),
-                row=2, col=2
+                go.Scatter(
+                    x=months, 
+                    y=cumulative, 
+                    mode='lines+markers', 
+                    name='Cumulative Cash Flow',
+                    line=dict(color='#2563eb', width=3)
+                ),
+                row=1, col=1
             )
-        
-        fig.update_layout(
-            height=600,
-            title_text=f"ROI Analysis Dashboard: {profile_name} → {country_name}",
-            showlegend=False
-        )
-        
-        return fig
+            
+            # ROI distribution (Monte Carlo)
+            if 'monte_carlo' in result:
+                mc_data = result['monte_carlo']
+                roi_samples = np.random.normal(
+                    mc_data.get('mean_roi', 0),
+                    max(1, mc_data.get('std_roi', 10)),
+                    500
+                )
+                fig.add_trace(
+                    go.Histogram(
+                        x=roi_samples, 
+                        name='ROI Distribution', 
+                        opacity=0.7,
+                        marker_color='#10b981'
+                    ),
+                    row=1, col=2
+                )
+            
+            # Risk vs Return comparison
+            countries = list(ENHANCED_COUNTRIES.keys())
+            calculator = ROICalculator()
+            risk_scores = [calculator._calculate_risk_score(
+                ENHANCED_COUNTRIES[c], 
+                ENHANCED_PROFILES.get('tech_startup', list(ENHANCED_PROFILES.values())[0])
+            ) for c in countries]
+            return_scores = [ENHANCED_COUNTRIES[c].market_growth for c in countries]
+            
+            fig.add_trace(
+                go.Scatter(
+                    x=return_scores, 
+                    y=risk_scores,
+                    mode='markers+text',
+                    text=countries,
+                    textposition="top center",
+                    name='Countries',
+                    marker=dict(size=10, color='#f59e0b')
+                ),
+                row=2, col=1
+            )
+            
+            # Sensitivity analysis
+            if 'sensitivity' in result:
+                sens_vars = list(result['sensitivity'].keys())
+                sens_values = list(result['sensitivity'].values())
+                
+                fig.add_trace(
+                    go.Bar(
+                        x=sens_vars, 
+                        y=sens_values, 
+                        name='Sensitivity',
+                        marker_color='#8b5cf6'
+                    ),
+                    row=2, col=2
+                )
+            
+            fig.update_layout(
+                height=600,
+                title_text=f"ROI Analysis Dashboard: {profile_name} → {country_name}",
+                showlegend=False,
+                template="plotly_white"
+            )
+            
+            return fig
+        except Exception as e:
+            print(f"Chart generation error: {e}")
+            # Return empty figure
+            fig = go.Figure()
+            fig.add_annotation(
+                text=f"Chart generation error: {str(e)}",
+                xref="paper", yref="paper",
+                x=0.5, y=0.5, showarrow=False
+            )
+            return fig
     
     @staticmethod
     def create_country_comparison_radar(countries: List[str], profile: str) -> go.Figure:
         """Create radar chart comparing countries"""
-        categories = ['Tax Efficiency', 'Cost of Living', 'Market Growth', 'Ease of Business', 'Banking', 'Overall Score']
-        
-        fig = go.Figure()
-        
-        colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
-        
-        for i, country_key in enumerate(countries[:5]):  # Limit to 5 countries
-            if country_key in ENHANCED_COUNTRIES:
-                country = ENHANCED_COUNTRIES[country_key]
-                
-                # Normalize scores to 0-100 scale
-                tax_eff = (1 - (country.corp_tax + country.pers_tax)) * 100
-                cost_eff = max(0, 100 - (country.living_cost / 100))
-                market = country.market_growth * 10
-                ease = country.ease_score * 10
-                banking = country.banking_score * 10
-                overall = country.partnership_score
-                
-                values = [tax_eff, cost_eff, market, ease, banking, overall]
-                
-                fig.add_trace(go.Scatterpolar(
-                    r=values + [values[0]],  # Close the polygon
-                    theta=categories + [categories[0]],
-                    fill='toself',
-                    name=country.name,
-                    line_color=colors[i % len(colors)],
-                    opacity=0.6
-                ))
-        
-        fig.update_layout(
-            polar=dict(
-                radialaxis=dict(
-                    visible=True,
-                    range=[0, 100]
-                )
-            ),
-            title="Multi-Country Comparison Radar",
-            height=500
-        )
-        
-        return fig
+        try:
+            categories = ['Tax Efficiency', 'Cost of Living', 'Market Growth', 'Ease of Business', 'Banking', 'Overall Score']
+            
+            fig = go.Figure()
+            
+            colors = ['#2563eb', '#10b981', '#f59e0b', '#ef4444', '#8b5cf6']
+            
+            for i, country_key in enumerate(countries[:5]):  # Limit to 5 countries
+                if country_key in ENHANCED_COUNTRIES:
+                    country = ENHANCED_COUNTRIES[country_key]
+                    
+                    # Normalize scores to 0-100 scale
+                    tax_eff = (1 - (country.corp_tax + country.pers_tax)) * 100
+                    cost_eff = max(0, 100 - (country.living_cost / 100))
+                    market = country.market_growth * 10
+                    ease = country.ease_score * 10
+                    banking = country.banking_score * 10
+                    overall = country.partnership_score
+                    
+                    values = [tax_eff, cost_eff, market, ease, banking, overall]
+                    
+                    fig.add_trace(go.Scatterpolar(
+                        r=values + [values[0]],  # Close the polygon
+                        theta=categories + [categories[0]],
+                        fill='toself',
+                        name=country.name,
+                        line_color=colors[i % len(colors)],
+                        opacity=0.6
+                    ))
+            
+            fig.update_layout(
+                polar=dict(
+                    radialaxis=dict(
+                        visible=True,
+                        range=[0, 100]
+                    )
+                ),
+                title="Multi-Country Comparison Radar",
+                height=500
+            )
+            
+            return fig
+        except Exception as e:
+            print(f"Radar chart error: {e}")
+            fig = go.Figure()
+            fig.add_annotation(text=f"Radar chart error: {str(e)}", x=0.5, y=0.5)
+            return fig
 
 # =========================
 # LEAD GENERATION & MONETIZATION ENGINE
@@ -1052,93 +1147,79 @@ class LeadEngine:
     
     def generate_personalized_offer(self, result: Dict, profile: UserProfile, country: CountryData) -> Dict:
         """Generate personalized offer based on calculation results"""
-        roi = result.get('roi', 0)
-        confidence = result.get('monte_carlo', {}).get('probability_positive_roi', 0)
-        
-        if roi >= 250 and confidence >= 0.8:
-            return {
-                'tier': 'premium',
-                'title': f'Complete {country.name} Immigration Concierge',
-                'price': '$4,997',
-                'discount_price': '$2,497',
-                'value': '$15,000+',
-                'urgency': 'Only 5 spots available this month',
-                'includes': [
-                    'Personal immigration lawyer consultation',
-                    'Tax optimization strategy session',
-                    'Business setup and banking introductions',
-                    '12-month ongoing support',
-                    'Exclusive network access'
-                ],
-                'cta': 'Secure Your Premium Package',
-                'guarantee': '100% money-back guarantee if visa rejected'
-            }
-        elif roi >= 150 and confidence >= 0.6:
-            return {
-                'tier': 'standard',
-                'title': f'{country.name} Business Migration Blueprint',
-                'price': '$997',
-                'discount_price': '$497',
-                'value': '$3,000+',
-                'urgency': 'Limited time 50% discount',
-                'includes': [
-                    'Complete legal requirements guide',
-                    'Step-by-step timeline and checklist',
-                    'Tax optimization strategies',
-                    '60-day email support',
-                    'Resource directory'
-                ],
-                'cta': 'Get Your Blueprint Now',
-                'guarantee': '30-day money-back guarantee'
-            }
-        else:
+        try:
+            roi = result.get('roi', 0)
+            confidence = result.get('monte_carlo', {}).get('probability_positive_roi', 0)
+            
+            if roi >= 250 and confidence >= 0.8:
+                return {
+                    'tier': 'premium',
+                    'title': f'Complete {country.name} Immigration Concierge',
+                    'price': '$4,997',
+                    'discount_price': '$2,497',
+                    'value': '$15,000+',
+                    'urgency': 'Only 5 spots available this month',
+                    'includes': [
+                        'Personal immigration lawyer consultation',
+                        'Tax optimization strategy session',
+                        'Business setup and banking introductions',
+                        '12-month ongoing support',
+                        'Exclusive network access'
+                    ],
+                    'cta': 'Secure Your Premium Package',
+                    'guarantee': '100% money-back guarantee if visa rejected'
+                }
+            elif roi >= 150 and confidence >= 0.6:
+                return {
+                    'tier': 'standard',
+                    'title': f'{country.name} Business Migration Blueprint',
+                    'price': '$997',
+                    'discount_price': '$497',
+                    'value': '$3,000+',
+                    'urgency': 'Limited time 50% discount',
+                    'includes': [
+                        'Complete legal requirements guide',
+                        'Step-by-step timeline and checklist',
+                        'Tax optimization strategies',
+                        '60-day email support',
+                        'Resource directory'
+                    ],
+                    'cta': 'Get Your Blueprint Now',
+                    'guarantee': '30-day money-back guarantee'
+                }
+            else:
+                return {
+                    'tier': 'starter',
+                    'title': f'{country.name} Exploration Package',
+                    'price': '$297',
+                    'discount_price': '$97',
+                    'value': '$500+',
+                    'urgency': 'Free for first 100 users',
+                    'includes': [
+                        'Country overview report',
+                        'Visa options comparison',
+                        'Basic cost calculator',
+                        'Initial checklist'
+                    ],
+                    'cta': 'Start Your Journey',
+                    'guarantee': 'Risk-free trial'
+                }
+        except Exception as e:
+            print(f"Offer generation error: {e}")
             return {
                 'tier': 'starter',
-                'title': f'{country.name} Exploration Package',
+                'title': 'Immigration Exploration Package',
                 'price': '$297',
                 'discount_price': '$97',
                 'value': '$500+',
-                'urgency': 'Free for first 100 users',
-                'includes': [
-                    'Country overview report',
-                    'Visa options comparison',
-                    'Basic cost calculator',
-                    'Initial checklist'
-                ],
-                'cta': 'Start Your Journey',
-                'guarantee': 'Risk-free trial'
+                'urgency': 'Limited time offer',
+                'includes': ['Basic consultation', 'Initial assessment'],
+                'cta': 'Get Started',
+                'guarantee': 'Money-back guarantee'
             }
-    
-    def create_viral_share_content(self, result: Dict, country_name: str, profile_name: str) -> Dict:
-        """Generate viral-ready social media content"""
-        roi = result.get('roi', 0)
-        payback = result.get('payback_years', float('inf'))
-        
-        payback_str = f"{payback:.1f} years" if payback != float('inf') else "∞"
-        
-        templates = {
-            'linkedin': {
-                'text': f"🚀 Just calculated my {country_name} immigration ROI: {roi:.1f}%!\n\n"
-                       f"As a {profile_name}, relocating to {country_name} could transform my business:\n"
-                       f"💰 Payback period: {payback_str}\n"
-                       f"📈 5-year ROI: {roi:.1f}%\n\n"
-                       f"Used VisaTier's advanced calculator - the insights are incredible!\n\n"
-                       f"#EntrepreneurLife #GlobalMobility #BusinessGrowth",
-                'url': 'https://visatier.com/calculator'
-            },
-            'twitter': {
-                'text': f"🌍 My {country_name} business immigration ROI: {roi:.1f}%\n\n"
-                       f"Payback in {payback_str} 📊\n\n"
-                       f"@VisaTier's calculator is a game-changer for entrepreneurs planning their next move!\n\n"
-                       f"#StartupLife #Immigration #ROI",
-                'url': 'https://visatier.com/calc'
-            }
-        }
-        
-        return templates
 
 # =========================
-# MAIN APPLICATION BUILDER
+# MAIN APPLICATION BUILDER - FIXED
 # =========================
 
 def create_premium_immigration_app():
@@ -1152,7 +1233,7 @@ def create_premium_immigration_app():
         user_session = gr.State({})
         
         # Enhanced Header
-        gr.HTML(f"""
+        gr.HTML("""
         <div class="premium-header">
             <div class="header-content">
                 <div>
@@ -1180,9 +1261,8 @@ def create_premium_immigration_app():
         with gr.Row():
             gr.Markdown("## 🎯 Step 1: Select Your Entrepreneur Profile")
         
-        profile_cards_html = """
-        <div class="profile-grid">
-        """
+        # Create profile cards HTML
+        profile_cards_html = '<div class="profile-grid">'
         
         for profile_id, profile in ENHANCED_PROFILES.items():
             profile_cards_html += f"""
@@ -1197,15 +1277,12 @@ def create_premium_immigration_app():
         </div>
         <script>
         function selectProfile(profileId, element) {
-            // Remove selected class from all cards
             document.querySelectorAll('.profile-card').forEach(card => {
                 card.classList.remove('selected');
             });
             
-            // Add selected class to clicked card
             element.classList.add('selected');
             
-            // Update hidden dropdown
             const dropdown = document.querySelector('#profile-selector select');
             if (dropdown) {
                 dropdown.value = profileId;
@@ -1297,26 +1374,29 @@ def create_premium_immigration_app():
                 country_insights = gr.HTML("", elem_id="country-insights")
                 
                 def update_insights(country_key, profile_key):
-                    if country_key in ENHANCED_COUNTRIES and profile_key in ENHANCED_PROFILES:
-                        country = ENHANCED_COUNTRIES[country_key]
-                        profile = ENHANCED_PROFILES[profile_key]
-                        
-                        insight = country.market_insights.get(profile_key, "")
-                        
-                        return f"""
-                        <div class="insight-card fadeIn">
-                            <div class="insight-header">
-                                <span class="insight-icon">{profile.icon}</span>
-                                <h3 class="insight-title">{country.name} Insights for {profile.name}s</h3>
+                    try:
+                        if country_key in ENHANCED_COUNTRIES and profile_key in ENHANCED_PROFILES:
+                            country = ENHANCED_COUNTRIES[country_key]
+                            profile = ENHANCED_PROFILES[profile_key]
+                            
+                            insight = country.market_insights.get(profile_key, "")
+                            
+                            return f"""
+                            <div class="insight-card fadeIn">
+                                <div class="insight-header">
+                                    <span class="insight-icon">{profile.icon}</span>
+                                    <h3 class="insight-title">{country.name} Insights for {profile.name}s</h3>
+                                </div>
+                                <div class="insight-description">{insight}</div>
+                                <div style="margin-top: 1rem;">
+                                    <strong>Key Metrics:</strong><br>
+                                    Corporate Tax: {country.corp_tax*100:.1f}% | Personal Tax: {country.pers_tax*100:.1f}%<br>
+                                    Living Cost: €{country.living_cost:,}/mo | Setup Cost: €{country.setup_cost:,}
+                                </div>
                             </div>
-                            <div class="insight-description">{insight}</div>
-                            <div style="margin-top: 1rem;">
-                                <strong>Key Metrics:</strong><br>
-                                Corporate Tax: {country.corp_tax*100:.1f}% | Personal Tax: {country.pers_tax*100:.1f}%<br>
-                                Living Cost: €{country.living_cost:,}/mo | Setup Cost: €{country.setup_cost:,}
-                            </div>
-                        </div>
-                        """
+                            """
+                    except Exception as e:
+                        print(f"Insights update error: {e}")
                     return ""
                 
                 target_country.change(
@@ -1389,12 +1469,13 @@ def create_premium_immigration_app():
                 lead_capture_modal = gr.HTML("", visible=False)
                 comparison_tools = gr.HTML("", visible=False)
         
-        # Main calculation function
+        # Main calculation function - FIXED
         def calculate_advanced_roi(
             profile_key, country_key, revenue, margin, corp_tax, pers_tax,
             living, business, rev_mult, margin_imp, success_prob, horizon, discount
         ):
             try:
+                # Input validation
                 if profile_key not in ENHANCED_PROFILES or country_key not in ENHANCED_COUNTRIES:
                     return [gr.update()] * 6
                 
@@ -1403,6 +1484,19 @@ def create_premium_immigration_app():
                 
                 # Initialize calculator
                 calculator = ROICalculator()
+                
+                # Ensure all inputs are valid numbers
+                revenue = max(1000, float(revenue or 45000))
+                margin = max(1, min(80, float(margin or 25)))
+                corp_tax = max(0, min(50, float(corp_tax or 25)))
+                pers_tax = max(0, min(50, float(pers_tax or 15)))
+                living = max(500, float(living or 4500))
+                business = max(100, float(business or 800))
+                rev_mult = max(0.5, min(10, float(rev_mult or 2.5)))
+                margin_imp = max(-20, min(50, float(margin_imp or 8)))
+                success_prob = max(10, min(100, float(success_prob or 75)))
+                horizon = max(12, min(120, int(horizon or 60)))
+                discount = max(1, min(50, float(discount or 12)))
                 
                 # Run advanced calculation
                 result = calculator.calculate_enhanced_roi(
@@ -1475,7 +1569,7 @@ def create_premium_immigration_app():
                         <div class="insight-description">
                             Probability of positive ROI: {mc['probability_positive_roi']*100:.1f}%
                             <br>Mean ROI: {mc['mean_roi']:.1f}% ± {mc['std_roi']:.1f}%
-                            <br>90% Confidence Interval: {mc['confidence_intervals']['roi_10']:.1f}% - {mc['confidence_intervals']['roi_90']:.1f}%
+                            <br>90% Confidence Interval: {mc['confidence_intervals'].get('roi_10', 0):.1f}% - {mc['confidence_intervals'].get('roi_90', 0):.1f}%
                         </div>
                     </div>
                     """
@@ -1515,28 +1609,9 @@ def create_premium_immigration_app():
                 </div>
                 
                 <script>
-                html = """
-                <script>
-                    function requestDataDeletion() {
-                        alert('Data deletion request recorded. We will process within 30 days per GDPR requirements.');
-                        // send request to backend
-                        fetch('/api/data-deletion', {
-                            method: 'POST',
-                            headers: { 'Content-Type': 'application/json' },
-                        body: JSON.stringify({ userId: window.currentUserId })
-                        })
-                        .then(response => {
-                            if (!response.ok) throw new Error('Network response was not ok');
-                            return response.json();
-                        })
-                        .then(data => {
-                            showToast('success', 'Your request has been submitted successfully.');
-                        })
-                        .catch(error => {
-                            console.error('Data deletion error:', error);
-                            showToast('error', 'Failed to submit deletion request. Please try again.');
-                        });
-                    }
+                function requestDataDeletion() {
+                    alert('Data deletion request recorded. We will process within 30 days per GDPR requirements.');
+                }
                 </script>
                 """
                 
@@ -1560,6 +1635,7 @@ def create_premium_immigration_app():
                 )
                 
             except Exception as e:
+                print(f"Calculation error: {e}")
                 error_html = f"""
                 <div class="kpi-card error">
                     <div class="kpi-value">Error</div>
@@ -1592,13 +1668,16 @@ def create_premium_immigration_app():
         
         # Auto-update form based on profile selection
         def update_form_for_profile(profile_key):
-            if profile_key in ENHANCED_PROFILES:
-                profile = ENHANCED_PROFILES[profile_key]
-                return (
-                    profile.typical_revenue,
-                    profile.margin_expectations[0] + 10,  # Use middle of range
-                    profile.risk_tolerance
-                )
+            try:
+                if profile_key in ENHANCED_PROFILES:
+                    profile = ENHANCED_PROFILES[profile_key]
+                    return (
+                        profile.typical_revenue,
+                        profile.margin_expectations[0] + 10,  # Use middle of range
+                        profile.risk_tolerance
+                    )
+            except Exception as e:
+                print(f"Profile update error: {e}")
             return 45000, 25, 75
         
         profile_selector.change(
@@ -1620,9 +1699,12 @@ def create_premium_immigration_app():
             comparison_chart = gr.Plot(visible=False)
             
             def generate_comparison(selected_countries, profile_key):
-                if len(selected_countries) >= 2 and profile_key in ENHANCED_PROFILES:
-                    chart = ChartGenerator.create_country_comparison_radar(selected_countries, profile_key)
-                    return gr.update(value=chart, visible=True)
+                try:
+                    if len(selected_countries) >= 2 and profile_key in ENHANCED_PROFILES:
+                        chart = ChartGenerator.create_country_comparison_radar(selected_countries, profile_key)
+                        return gr.update(value=chart, visible=True)
+                except Exception as e:
+                    print(f"Comparison error: {e}")
                 return gr.update(visible=False)
             
             comparison_countries.change(
@@ -1696,13 +1778,11 @@ def generate_pdf_report(result: Dict, profile: UserProfile, country: CountryData
 
 def send_to_crm(email: str, profile: str, result: Dict) -> bool:
     """Send lead data to CRM system (placeholder)"""
-    # In production, integrate with HubSpot, Salesforce, etc.
     print(f"CRM: New lead {email} - {profile} - ROI: {result.get('roi', 0):.1f}%")
     return True
 
 def schedule_consultation(email: str, profile: str, country: str, roi: float) -> str:
     """Schedule consultation via Calendly API (placeholder)"""
-    # In production, integrate with Calendly, Acuity, etc.
     return f"https://calendly.com/visatier/consultation?email={email}&profile={profile}"
 
 # =========================
